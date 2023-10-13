@@ -43,8 +43,7 @@ public class SecurityConfig {
                                             HttpMethod.POST,
                                             "/registration",
                                             "/authentication",
-                                            "/hello",
-                                            "/swagger-ui/**"
+                                            "/hello"
                                     ).permitAll()
 
                                     .requestMatchers(HttpMethod.GET, "/admin/delete").hasAuthority(Permission.DELETE_ADMIN.name())
