@@ -1,4 +1,4 @@
-package com.app.messenger.security.controller.dto;
+package com.app.messenger.security.handler.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthenticationResponse {
-    private String jwt;
-    private String role;
+public class ExceptionResponse {
+    private String message;
 }

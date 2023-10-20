@@ -1,6 +1,5 @@
 package com.app.messenger.security.service;
 
-import com.app.messenger.exception.TokenNotFoundException;
 import com.app.messenger.exception.UserAlreadyExistsException;
 import com.app.messenger.repository.JwtRepository;
 import com.app.messenger.repository.UserRepository;
@@ -32,7 +31,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public ResponseEntity<AuthenticationResponse> register(RegistrationRequest registrationRequest)
-            throws UserAlreadyExistsException {
+            throws Exception {
 
         if (userRepository.existsByUsername(registrationRequest.getUsername())) {
             throw new UserAlreadyExistsException("User with username " + registrationRequest.getUsername() + " already exists in database");
@@ -51,12 +50,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 AuthenticationResponse
                         .builder()
                         .jwt(jwt.getPlainContent())
+                        .role(savedUser.getRole().name())
                         .build()
         );
     }
 
     @Override
-    public ResponseEntity<AuthenticationResponse> authenticate(AuthenticationRequest authenticationRequest) throws TokenNotFoundException {
+    public ResponseEntity<AuthenticationResponse> authenticate(AuthenticationRequest authenticationRequest) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         authenticationRequest.getUsername(),
@@ -82,6 +82,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 AuthenticationResponse
                         .builder()
                         .jwt(jwt.getPlainContent())
+                        .role(user.getRole().name())
                         .build()
         );
     }

@@ -1,7 +1,5 @@
 package com.app.messenger.security.controller;
 
-import com.app.messenger.exception.TokenNotFoundException;
-import com.app.messenger.exception.UserAlreadyExistsException;
 import com.app.messenger.security.controller.dto.AuthenticationRequest;
 import com.app.messenger.security.controller.dto.AuthenticationResponse;
 import com.app.messenger.security.controller.dto.RegistrationRequest;
@@ -20,14 +18,14 @@ public class AuthenticationController {
     @PostMapping("/registration")
     public ResponseEntity<AuthenticationResponse> register(
             @RequestBody RegistrationRequest registrationRequest
-    ) throws UserAlreadyExistsException {
+    ) throws Exception {
         return authenticationService.register(registrationRequest);
     }
 
     @PostMapping("/authentication")
     public ResponseEntity<AuthenticationResponse> authenticate(
             @RequestBody AuthenticationRequest authenticationRequest
-    ) throws TokenNotFoundException {
+    ) {
         return authenticationService.authenticate(authenticationRequest);
     }
 }

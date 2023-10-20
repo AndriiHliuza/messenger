@@ -1,6 +1,5 @@
 package com.app.messenger.security.service;
 
-import com.app.messenger.exception.TokenNotFoundException;
 import com.app.messenger.repository.JwtRepository;
 import com.app.messenger.repository.model.Jwt;
 import com.app.messenger.repository.model.TokenType;
@@ -38,25 +37,6 @@ public class JwtService {
 
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final JwtRepository jwtRepository;
-
-//    public Jwt encodeJwt(String jwtContent, User user) {
-//        return Jwt
-//                .builder()
-//                .content(passwordEncoder.encode(jwtContent))
-//                .type(TokenType.BEARER)
-//                .user(user)
-//                .build();
-//    }
-
-    public void checkIfJwtExistsInDatabase(String rawJwtContent, String encryptedJwtContent) throws TokenNotFoundException {
-        Jwt jwt = jwtRepository.findByContent(encryptedJwtContent).orElseThrow(
-                () -> new TokenNotFoundException("Jwt not found in database")
-        );
-
-        if (!passwordEncoder.matches(rawJwtContent, jwt.getContent())) {
-            throw new TokenNotFoundException("Jwt do not match to the encrypted jwt");
-        }
-    }
 
     public Jwt generateJwt(User user) {
         Jwt jwt = jwtRepository

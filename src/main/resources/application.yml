@@ -26,4 +26,6 @@ security:
   admin:
     password: adminpassword
 
-
+cors:
+  origins:
+    url: http://localhost:3000
