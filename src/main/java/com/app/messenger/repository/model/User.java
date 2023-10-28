@@ -43,13 +43,8 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @OneToOne(mappedBy = "user", cascade = {
-            CascadeType.MERGE,
-            CascadeType.REMOVE,
-            CascadeType.DETACH,
-            CascadeType.REFRESH
-    })
-    private Jwt jwt;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Jwt> jwts;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

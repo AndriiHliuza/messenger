@@ -45,7 +45,7 @@ public class UserRegistrationConverter implements Converter<RegistrationRequest,
 
         LocalDate birthday = null;
         String receivedBirthday = registrationRequest.getBirthday();
-        if (receivedBirthday != null) {
+        if (receivedBirthday != null && !receivedBirthday.isBlank()) {
             birthday = LocalDate.parse(receivedBirthday, dateTimeFormatter);
         }
 

@@ -13,6 +13,8 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -31,7 +33,7 @@ public class LogoutHandlerImpl implements LogoutHandler {
         final String jwtContent;
         final String username;
         final User user;
-        final Jwt jwt;
+        final List<Jwt> tokens;
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwtContent = authorizationHeader.substring(7);
@@ -44,14 +46,17 @@ public class LogoutHandlerImpl implements LogoutHandler {
                                 () -> new UsernameNotFoundException("User with username " + username + " not found")
                         );
 
-                if (user != null && jwtService.isTokenValid(jwtContent, user)) {
+                try {
+                    if (user != null && jwtService.isTokenValid(jwtContent, user)) {
 
+                        tokens = jwtRepository.findByUserId(user.getId());
 
-                    jwt = jwtRepository.findByUserId(user.getId()).orElse(null);
-
-                    if (jwt != null) {
-                        jwtRepository.delete(jwt);
+                        if (!tokens.isEmpty()) {
+                            jwtRepository.deleteAll(tokens);
+                        }
                     }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
             }
         }

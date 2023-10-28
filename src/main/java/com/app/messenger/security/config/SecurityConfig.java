@@ -3,6 +3,7 @@ package com.app.messenger.security.config;
 import com.app.messenger.repository.model.Permission;
 import com.app.messenger.repository.model.Role;
 import com.app.messenger.security.service.JwtAuthenticationFilter;
+import com.app.messenger.security.service.UserAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,12 +34,17 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
     private final LogoutHandler logoutHandler;
+    private final UserAuthenticationEntryPoint userAuthenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
+                .httpBasic(
+                        httpSecurityHttpBasicConfigurer ->
+                                httpSecurityHttpBasicConfigurer.authenticationEntryPoint(userAuthenticationEntryPoint)
+                )
                 .authorizeHttpRequests(
                         request -> {
                             request.requestMatchers(
@@ -74,7 +80,6 @@ public class SecurityConfig {
 
                 )
                 .build();
-
     }
 
     @Bean

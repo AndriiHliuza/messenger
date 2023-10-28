@@ -16,16 +16,33 @@ spring:
     user: postgres
     password: postgres
 
-jwt:
-  secret-encryption-key: 753778214125442A472D4B6150645367566B59703373367639792F423F452848
-  expiration-date: 86400000
+logging:
+  level:
+    com:
+      app:
+        messenger:
+          security:
+            service: DEBUG
 
-security:
-  root:
-    password: rootpassword
-  admin:
-    password: adminpassword
+application:
+  jwt:
+    secret-encryption-key: 753778214125442A472D4B6150645367566B59703373367639792F423F452848
+    access-token:
+      expiration-date: 86400000 # 1 day
+    refresh-token:
+      expiration-date: 604800000 # 7 days
 
-cors:
-  origins:
-    url: http://localhost:3000
+  security:
+    service:
+      encryption:
+        algorithm: AES
+        aes-key: e7b824fa21866572831e7a30aaa01957
+    root:
+      password: rootpassword
+    admin:
+      password: adminpassword
+
+  cors:
+    origins:
+      url: http://localhost:3000
+

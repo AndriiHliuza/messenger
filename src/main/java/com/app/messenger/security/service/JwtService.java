@@ -2,6 +2,7 @@ package com.app.messenger.security.service;
 
 import com.app.messenger.repository.JwtRepository;
 import com.app.messenger.repository.model.Jwt;
+import com.app.messenger.repository.model.TokenTargetType;
 import com.app.messenger.repository.model.TokenType;
 import com.app.messenger.repository.model.User;
 import io.jsonwebtoken.Claims;
@@ -13,15 +14,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Key;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 @Service
@@ -30,50 +27,82 @@ import java.util.function.Function;
 @Transactional
 public class JwtService {
 
-    @Value("${jwt.secret-encryption-key}")
+    @Value("${application.jwt.secret-encryption-key}")
     private String SECRET_ENCRYPTION_KEY;
-    @Value("${jwt.expiration-date}")
-    private int EXPIRATION_DATE;
 
-    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    @Value("${application.jwt.refresh-token.expiration-date}")
+    private int REFRESH_TOKEN_EXPIRATION_DATE;
+
+    @Value("${application.jwt.access-token.expiration-date}")
+    private int ACCESS_TOKEN_EXPIRATION_DATE;
+
     private final JwtRepository jwtRepository;
+    private final EncryptionService encryptionService;
 
-    public Jwt generateJwt(User user) {
-        Jwt jwt = jwtRepository
-                .findByUserId(user.getId())
+    public Jwt generateToken(User user, TokenTargetType targetType) throws Exception {
+        Jwt token = jwtRepository
+                .findByUserIdAndTargetType(user.getId(), targetType)
                 .orElse(null);
 
-        if (jwt != null) {
-            jwtRepository.delete(jwt);
-            log.debug("Old jwt for user with username {} was removed from database", user.getUsername());
+        if (token != null) {
+            jwtRepository.delete(token);
+            log.debug("Old {} TOKEN for user with username {} was removed from database",
+                    targetType.name(),
+                    user.getUsername());
         }
 
-        String plainContent = generateToken(user);
-        String encodedContent = passwordEncoder.encode(plainContent);
-        jwt = Jwt
+        String plainContent = switch (targetType) {
+            case ACCESS -> generateAccessToken(user);
+            case REFRESH -> generateRefreshToken(user);
+        };
+
+        String encryptedContent = encryptionService.encrypt(plainContent);
+
+        token = Jwt
                 .builder()
-                .content(encodedContent)
+                .content(encryptedContent)
                 .type(TokenType.BEARER)
+                .targetType(targetType)
                 .user(user)
                 .plainContent(plainContent)
                 .build();
 
-        if (jwtRepository.existsByContent(encodedContent)) {
-            jwtRepository.delete(jwt);
-            log.debug("Old jwt for user with username {} was removed from database", user.getUsername());
+        if (jwtRepository.existsByContent(encryptedContent)) {
+            jwtRepository.delete(token);
+            log.debug("Old {} TOKEN for user with username {} was removed from database",
+                    targetType.name(),
+                    user.getUsername());
         }
 
-        log.debug("Jwt was generated for the user with username: {}", user.getUsername());
+        log.debug("{} TOKEN was generated for the user with username: {}",
+                targetType.name(),
+                user.getUsername());
 
-        return jwt;
+        return token;
     }
 
-    public String generateToken(
+    public String generateAccessToken(User user) {
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("ROLE", user.getRole().name());
+        extraClaims.put("TARGET", TokenTargetType.ACCESS.name());
+
+        return buildToken(extraClaims, user, ACCESS_TOKEN_EXPIRATION_DATE);
+    }
+
+    public String generateRefreshToken(User user) {
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("TARGET", TokenTargetType.REFRESH.name());
+
+        return buildToken(extraClaims, user, REFRESH_TOKEN_EXPIRATION_DATE);
+    }
+
+    private String buildToken(
             Map<String, Object> extraClaims,
-            UserDetails userDetails
+            UserDetails userDetails,
+            int expirationTime
     ) {
         final Date creationDate = new Date();
-        final Date expirationDate = new Date(creationDate.getTime() + EXPIRATION_DATE);
+        final Date expirationDate = new Date(creationDate.getTime() + expirationTime);
 
         return Jwts
                 .builder()
@@ -85,17 +114,22 @@ public class JwtService {
                 .compact();
     }
 
-    public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
-    }
-
-    public boolean isTokenValid(String jwt, UserDetails userDetails) {
+    public boolean isTokenValid(String jwt, UserDetails userDetails) throws Exception {
         final String username = extractUsername(jwt);
-        Jwt userJwt = ((User) userDetails).getJwt();
+        final TokenTargetType tokenTargetType = extractTokenTargetType(jwt);
+
+        if (tokenTargetType == null) {
+            return false;
+        }
+
+        Jwt userJwt = jwtRepository
+                .findByUserIdAndTargetType(((User) userDetails).getId(), tokenTargetType)
+                .orElse(null);
+
         return username.equals(userDetails.getUsername())
                 && !isTokenExpired(jwt)
                 && (userJwt != null)
-                && passwordEncoder.matches(jwt, userJwt.getContent());
+                && encryptionService.matches(jwt, userJwt.getContent());
     }
 
     private boolean isTokenExpired(String jwt) {
@@ -108,6 +142,14 @@ public class JwtService {
 
     public String extractUsername(String jwt) {
         return extractClaim(jwt, Claims::getSubject);
+    }
+
+    private TokenTargetType extractTokenTargetType(String jwt) {
+        String targetClaim = extractClaim(jwt, claims -> claims.get("TARGET", String.class));
+        if (targetClaim != null) {
+            return TokenTargetType.valueOf(targetClaim.toUpperCase());
+        }
+        return null;
     }
 
     private <T> T extractClaim(String jwt, Function<Claims, T> claimsResolver) {

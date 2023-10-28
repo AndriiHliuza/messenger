@@ -17,10 +17,10 @@ import java.time.ZonedDateTime;
 @RequiredArgsConstructor
 public class ApplicationConfig {
 
-    @Value("${security.root.password}")
+    @Value("${application.security.root.password}")
     private String ROOT_PASSWORD;
 
-    @Value("${security.admin.password}")
+    @Value("${application.security.admin.password}")
     private String ADMIN_PASSWORD;
 
     private final UserRepository userRepository;

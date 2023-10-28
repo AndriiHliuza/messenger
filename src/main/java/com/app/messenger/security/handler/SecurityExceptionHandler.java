@@ -3,12 +3,10 @@ package com.app.messenger.security.handler;
 import com.app.messenger.exception.PasswordNotFoundException;
 import com.app.messenger.exception.UserAlreadyExistsException;
 import com.app.messenger.security.handler.response.ExceptionResponse;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.security.SignatureException;
 import org.hibernate.PropertyValueException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -31,7 +29,7 @@ public class SecurityExceptionHandler {
 
     @ExceptionHandler(value = {SignatureException.class})
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ExceptionResponse handleJwtException(JwtException exception) {
+    public ExceptionResponse handleJwtException() {
         return ExceptionResponse
                 .builder()
                 .message("Invalid jwt token")
@@ -43,7 +41,7 @@ public class SecurityExceptionHandler {
             BadCredentialsException.class
     })
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ExceptionResponse handleAuthenticationException(AuthenticationException exception) {
+    public ExceptionResponse handleAuthenticationException() {
         return ExceptionResponse
                 .builder()
                 .message("Bad credentials")

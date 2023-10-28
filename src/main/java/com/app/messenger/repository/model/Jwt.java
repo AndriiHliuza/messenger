@@ -25,11 +25,13 @@ public class Jwt {
     @Enumerated(EnumType.STRING)
     private TokenType type;
 
-    @OneToOne
+    @Enumerated(EnumType.STRING)
+    private TokenTargetType targetType;
+
+    @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
     @Transient
     private String plainContent;
-
 }
