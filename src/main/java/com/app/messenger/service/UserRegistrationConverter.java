@@ -1,6 +1,6 @@
 package com.app.messenger.service;
 
-import com.app.messenger.exception.PasswordNotFoundException;
+import com.app.messenger.security.exception.PasswordNotFoundException;
 import com.app.messenger.repository.model.Role;
 import com.app.messenger.repository.model.User;
 import com.app.messenger.security.controller.dto.RegistrationRequest;

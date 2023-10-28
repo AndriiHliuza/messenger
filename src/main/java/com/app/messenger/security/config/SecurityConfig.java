@@ -49,9 +49,10 @@ public class SecurityConfig {
                         request -> {
                             request.requestMatchers(
                                             HttpMethod.POST,
-                                            "/registration",
-                                            "/authentication",
-                                            "/hello"
+                                            "/api/registration",
+                                            "/api/authentication",
+                                            "/api/jwt/validation",
+                                            "/api/hello"
                                     ).permitAll()
 
                                     .requestMatchers(HttpMethod.GET, "/admin/delete").hasAuthority(Permission.DELETE_ADMIN.name())
@@ -73,6 +74,7 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout(
                         httpSecurityLogoutConfigurer -> httpSecurityLogoutConfigurer
+                                .logoutUrl("/api/logout")
                                 .addLogoutHandler(logoutHandler)
                                 .logoutSuccessHandler(
                                         (request, response, authentication) -> SecurityContextHolder.clearContext()

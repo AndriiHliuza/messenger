@@ -21,7 +21,7 @@ import java.util.List;
 public class LogoutHandlerImpl implements LogoutHandler {
     private final JwtRepository jwtRepository;
     private final UserRepository userRepository;
-    private final JwtService jwtService;
+    private final JwtUtil jwtUtil;
 
     @Override
     public void logout(
@@ -37,7 +37,7 @@ public class LogoutHandlerImpl implements LogoutHandler {
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwtContent = authorizationHeader.substring(7);
-            username = jwtService.extractUsername(jwtContent);
+            username = jwtUtil.extractUsername(jwtContent);
 
             if (username != null) {
                 user = userRepository
@@ -47,7 +47,7 @@ public class LogoutHandlerImpl implements LogoutHandler {
                         );
 
                 try {
-                    if (user != null && jwtService.isTokenValid(jwtContent, user)) {
+                    if (user != null && jwtUtil.isTokenValid(jwtContent, user)) {
 
                         tokens = jwtRepository.findByUserId(user.getId());
 

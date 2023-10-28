@@ -1,16 +1,21 @@
 package com.app.messenger.security.handler;
 
-import com.app.messenger.exception.PasswordNotFoundException;
-import com.app.messenger.exception.UserAlreadyExistsException;
+import com.app.messenger.security.exception.PasswordNotFoundException;
+import com.app.messenger.security.exception.UserAlreadyExistsException;
 import com.app.messenger.security.handler.response.ExceptionResponse;
 import io.jsonwebtoken.security.SignatureException;
 import org.hibernate.PropertyValueException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import java.security.InvalidKeyException;
 
 @RestControllerAdvice
 public class SecurityExceptionHandler {
@@ -40,7 +45,7 @@ public class SecurityExceptionHandler {
             UsernameNotFoundException.class,
             BadCredentialsException.class
     })
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
     public ExceptionResponse handleAuthenticationException() {
         return ExceptionResponse
                 .builder()
@@ -48,4 +53,16 @@ public class SecurityExceptionHandler {
                 .build();
     }
 
+    @ExceptionHandler(value = {
+            IllegalBlockSizeException.class,
+            BadPaddingException.class,
+            InvalidKeyException.class
+    })
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionResponse handleEncryptionExceptions() {
+        return ExceptionResponse
+                .builder()
+                .message("Request failed due to server side error")
+                .build();
+    }
 }

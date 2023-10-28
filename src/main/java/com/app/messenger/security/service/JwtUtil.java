@@ -25,7 +25,7 @@ import java.util.function.Function;
 @Slf4j
 @RequiredArgsConstructor
 @Transactional
-public class JwtService {
+public class JwtUtil {
 
     @Value("${application.jwt.secret-encryption-key}")
     private String SECRET_ENCRYPTION_KEY;

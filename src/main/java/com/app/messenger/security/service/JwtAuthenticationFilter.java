@@ -18,15 +18,15 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
+    private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
     private final HandlerExceptionResolver handlerExceptionResolver;
 
     public JwtAuthenticationFilter(
-            JwtService jwtService,
+            JwtUtil jwtUtil,
             UserDetailsService userDetailsService,
             @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver) {
-        this.jwtService = jwtService;
+        this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
         this.handlerExceptionResolver = handlerExceptionResolver;
     }
@@ -44,12 +44,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (authenticationHeader != null && authenticationHeader.startsWith("Bearer ")) {
                 jwt = authenticationHeader.substring(7);
-                username = jwtService.extractUsername(jwt);
+                username = jwtUtil.extractUsername(jwt);
 
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-                    if (jwtService.isTokenValid(jwt, userDetails)) {
+                    if (jwtUtil.isTokenValid(jwt, userDetails)) {
 
                         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                                 userDetails,
