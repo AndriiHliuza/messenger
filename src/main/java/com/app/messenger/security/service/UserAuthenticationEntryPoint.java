@@ -1,6 +1,6 @@
 package com.app.messenger.security.service;
 
-import com.app.messenger.security.handler.response.ExceptionResponse;
+import com.app.messenger.handler.dto.ExceptionResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

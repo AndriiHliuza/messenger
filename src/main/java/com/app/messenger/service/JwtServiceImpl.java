@@ -1,6 +1,7 @@
 package com.app.messenger.service;
 
 import com.app.messenger.controller.dto.TokenValidationResponse;
+import com.app.messenger.exception.InvalidTokenException;
 import com.app.messenger.repository.JwtRepository;
 import com.app.messenger.repository.UserRepository;
 import com.app.messenger.repository.model.Jwt;
@@ -9,6 +10,7 @@ import com.app.messenger.repository.model.User;
 import com.app.messenger.controller.dto.Token;
 import com.app.messenger.security.service.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -63,7 +65,13 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public TokenValidationResponse validate(Token token) throws Exception {
         final String jwt = token.getContent();
-        final String username = jwtUtil.extractUsername(token.getContent());
+        String username;
+
+        try {
+            username = jwtUtil.extractUsername(jwt);
+        } catch (JwtException ex) {
+            throw new InvalidTokenException("Invalid jwt");
+        }
 
         boolean isValid = false;
 

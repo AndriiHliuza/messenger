@@ -1,4 +1,4 @@
-package com.app.messenger.security.handler.response;
+package com.app.messenger.handler.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

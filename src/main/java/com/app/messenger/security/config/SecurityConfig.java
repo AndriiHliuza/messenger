@@ -51,7 +51,7 @@ public class SecurityConfig {
                                             HttpMethod.POST,
                                             "/api/registration",
                                             "/api/authentication",
-                                            "/api/jwt/validation",
+                                            "/api/jwt/**",
                                             "/api/hello"
                                     ).permitAll()
 

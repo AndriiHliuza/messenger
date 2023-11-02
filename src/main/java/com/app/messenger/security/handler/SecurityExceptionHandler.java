@@ -2,11 +2,10 @@ package com.app.messenger.security.handler;
 
 import com.app.messenger.security.exception.PasswordNotFoundException;
 import com.app.messenger.security.exception.UserAlreadyExistsException;
-import com.app.messenger.security.handler.response.ExceptionResponse;
+import com.app.messenger.handler.dto.ExceptionResponse;
 import io.jsonwebtoken.security.SignatureException;
 import org.hibernate.PropertyValueException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -37,7 +36,7 @@ public class SecurityExceptionHandler {
     public ExceptionResponse handleJwtException() {
         return ExceptionResponse
                 .builder()
-                .message("Invalid jwt token")
+                .message("Invalid jwt")
                 .build();
     }
 

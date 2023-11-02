@@ -83,15 +83,15 @@ public class JwtUtil {
 
     public String generateAccessToken(User user) {
         Map<String, Object> extraClaims = new HashMap<>();
-        extraClaims.put("ROLE", user.getRole().name());
-        extraClaims.put("TARGET", TokenTargetType.ACCESS.name());
+        extraClaims.put("role", user.getRole().name());
+        extraClaims.put("target", TokenTargetType.ACCESS.name());
 
         return buildToken(extraClaims, user, ACCESS_TOKEN_EXPIRATION_DATE);
     }
 
     public String generateRefreshToken(User user) {
         Map<String, Object> extraClaims = new HashMap<>();
-        extraClaims.put("TARGET", TokenTargetType.REFRESH.name());
+        extraClaims.put("target", TokenTargetType.REFRESH.name());
 
         return buildToken(extraClaims, user, REFRESH_TOKEN_EXPIRATION_DATE);
     }
@@ -145,7 +145,7 @@ public class JwtUtil {
     }
 
     private TokenTargetType extractTokenTargetType(String jwt) {
-        String targetClaim = extractClaim(jwt, claims -> claims.get("TARGET", String.class));
+        String targetClaim = extractClaim(jwt, claims -> claims.get("target", String.class));
         if (targetClaim != null) {
             return TokenTargetType.valueOf(targetClaim.toUpperCase());
         }
