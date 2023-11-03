@@ -3,6 +3,7 @@ CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     username VARCHAR(256) UNIQUE NOT NULL,
     password VARCHAR(256) NOT NULL,
+    unique_name VARCHAR(256) UNIQUE NOT NULL,
     registration_date TIMESTAMPTZ NOT NULL DEFAULT current_timestamp,
     firstname VARCHAR(128) NOT NULL,
     lastname VARCHAR(128) NOT NULL,

@@ -30,6 +30,7 @@ public class UserRegistrationConverter implements Converter<RegistrationRequest,
         return RegistrationRequest
                 .builder()
                 .username(user.getUsername())
+                .uniqueName(user.getUniqueName())
                 .firstname(user.getFirstname())
                 .lastname(user.getFirstname())
                 .birthday(birthdayToReturn)
@@ -53,6 +54,7 @@ public class UserRegistrationConverter implements Converter<RegistrationRequest,
                 .builder()
                 .username(registrationRequest.getUsername())
                 .password(passwordEncoder.encode(registrationRequest.getPassword()))
+                .uniqueName(registrationRequest.getUniqueName())
                 .registrationDate(ZonedDateTime.now())
                 .firstname(registrationRequest.getFirstname())
                 .lastname(registrationRequest.getLastname())

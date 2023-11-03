@@ -29,6 +29,8 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    private String uniqueName;
+
     @Column(nullable = false)
     private ZonedDateTime registrationDate;
 

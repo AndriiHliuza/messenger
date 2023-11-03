@@ -30,12 +30,13 @@ public class ApplicationConfig {
     public CommandLineRunner run(PasswordEncoder passwordEncoder) {
         return args -> {
 
-            if (!userRepository.existsByUsername("root@mail.com")) {
+            if (!userRepository.existsByUsername("root@root")) {
 
                 User root = User
                         .builder()
-                        .username("root@mail.com")
+                        .username("root@root")
                         .password(passwordEncoder.encode(ROOT_PASSWORD))
+                        .uniqueName("root")
                         .registrationDate(ZonedDateTime.now())
                         .firstname("root")
                         .lastname("root")
@@ -45,12 +46,13 @@ public class ApplicationConfig {
                 userRepository.save(root);
             }
 
-            if (!userRepository.existsByUsername("admin@mail.com")) {
+            if (!userRepository.existsByUsername("admin@admin")) {
 
                 User admin = User
                         .builder()
-                        .username("admin@mail.com")
+                        .username("admin@admin")
                         .password(passwordEncoder.encode(ADMIN_PASSWORD))
+                        .uniqueName("admin")
                         .registrationDate(ZonedDateTime.now())
                         .firstname("admin")
                         .lastname("admin")
