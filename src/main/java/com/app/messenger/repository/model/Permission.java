@@ -13,5 +13,10 @@ public enum Permission {
     READ_ADMIN,
     CREATE_ADMIN,
     UPDATE_ADMIN,
-    DELETE_ADMIN
+    DELETE_ADMIN,
+
+    // operations with root
+
+    READ_ROOT,
+    UPDATE_ROOT
 }

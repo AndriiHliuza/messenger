@@ -3,7 +3,6 @@ package com.app.messenger.repository.model;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -11,14 +10,23 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public enum Role {
 
-    USER(Collections.emptySet()),
+    USER(
+            Set.of(
+                    Permission.READ_USER,
+                    Permission.UPDATE_USER,
+                    Permission.DELETE_USER
+            )
+    ),
     ADMIN(
             Set.of(
                     Permission.READ_USER,
                     Permission.CREATE_USER,
                     Permission.UPDATE_USER,
                     Permission.DELETE_USER,
-                    Permission.CREATE_ADMIN
+
+                    Permission.READ_ADMIN,
+                    Permission.CREATE_ADMIN,
+                    Permission.UPDATE_ADMIN
             )
     ),
     ROOT(
@@ -27,10 +35,14 @@ public enum Role {
                     Permission.CREATE_USER,
                     Permission.UPDATE_USER,
                     Permission.DELETE_USER,
+
                     Permission.READ_ADMIN,
                     Permission.CREATE_ADMIN,
                     Permission.UPDATE_ADMIN,
-                    Permission.DELETE_ADMIN
+                    Permission.DELETE_ADMIN,
+
+                    Permission.READ_ROOT,
+                    Permission.UPDATE_ROOT
             )
     );
 

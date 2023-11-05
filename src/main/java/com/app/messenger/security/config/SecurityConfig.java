@@ -1,6 +1,5 @@
 package com.app.messenger.security.config;
 
-import com.app.messenger.repository.model.Permission;
 import com.app.messenger.repository.model.Role;
 import com.app.messenger.security.service.JwtAuthenticationFilter;
 import com.app.messenger.security.service.UserAuthenticationEntryPoint;
@@ -55,12 +54,16 @@ public class SecurityConfig {
                                             "/api/hello"
                                     ).permitAll()
 
-                                    .requestMatchers(HttpMethod.GET, "/admin/delete").hasAuthority(Permission.DELETE_ADMIN.name())
+                                    .requestMatchers("/users/**").hasAnyRole(
+                                            Role.USER.name(),
+                                            Role.ADMIN.name(),
+                                            Role.ROOT.name()
+                                    )
                                     .requestMatchers("/admin/**").hasAnyRole(
                                             Role.ADMIN.name(),
                                             Role.ROOT.name()
                                     )
-                                    .requestMatchers("/root/**").hasAnyRole(Role.ROOT.name())
+                                    .requestMatchers("/root/**").hasRole(Role.ROOT.name())
 
                                     .anyRequest().authenticated();
 
