@@ -6,7 +6,13 @@ import com.app.messenger.repository.UserRepository;
 import com.app.messenger.repository.model.Role;
 import com.app.messenger.repository.model.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,5 +27,18 @@ public class UserServiceImpl implements UserService {
                         () -> new UserNotFoundException("User with uniqueName " + uniqueName + " not found")
                 );
         return userConverter.toDto(user);
+    }
+
+    @Override
+    public Collection<UserDto> getAllUsers(int page, int size, String order) {
+        Sort.Direction sortOrder = Sort.Direction.valueOf(order.toUpperCase());
+        Sort sort = Sort.by(sortOrder, "uniqueName");
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Collection<User> users = userRepository.findByRole(Role.USER, pageable);
+
+        return users
+                .stream()
+                .map(userConverter::toDto)
+                .collect(Collectors.toList());
     }
 }

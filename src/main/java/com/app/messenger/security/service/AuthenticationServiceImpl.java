@@ -36,6 +36,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public AuthenticationResponse register(RegistrationRequest registrationRequest) throws Exception {
         if (userRepository.existsByUsername(registrationRequest.getUsername())) {
             throw new UserAlreadyExistsException("User with username " + registrationRequest.getUsername() + " already exists in database");
+        } else if (userRepository.existsByUniqueName(registrationRequest.getUniqueName())) {
+            throw new UserAlreadyExistsException("User with uniqueName " + registrationRequest.getUniqueName() + " already exists in database");
         }
 
         User userToSave = userRegistrationConverter.toEntity(registrationRequest);
