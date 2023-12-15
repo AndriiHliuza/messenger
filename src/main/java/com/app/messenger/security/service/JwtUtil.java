@@ -83,7 +83,6 @@ public class JwtUtil {
 
     public String generateAccessToken(User user) {
         Map<String, Object> extraClaims = new HashMap<>();
-        extraClaims.put("uniqueName", user.getUniqueName());
         extraClaims.put("role", user.getRole().name());
         extraClaims.put("target", TokenTargetType.ACCESS.name());
 
@@ -92,7 +91,6 @@ public class JwtUtil {
 
     public String generateRefreshToken(User user) {
         Map<String, Object> extraClaims = new HashMap<>();
-        extraClaims.put("uniqueName", user.getUniqueName());
         extraClaims.put("target", TokenTargetType.REFRESH.name());
 
         return buildToken(extraClaims, user, REFRESH_TOKEN_EXPIRATION_DATE);
@@ -118,10 +116,9 @@ public class JwtUtil {
 
     public boolean isTokenValid(String jwt, UserDetails userDetails) throws Exception {
         final String username = extractUsername(jwt);
-        final String uniqueName = extractUniqueName(jwt);
         final TokenTargetType tokenTargetType = extractTokenTargetType(jwt);
 
-        if (tokenTargetType == null || uniqueName == null) {
+        if (tokenTargetType == null) {
             return false;
         }
 
@@ -130,7 +127,6 @@ public class JwtUtil {
                 .orElse(null);
 
         return username.equals(userDetails.getUsername())
-                && uniqueName.equals(((User) userDetails).getUniqueName())
                 && !isTokenExpired(jwt)
                 && (userJwt != null)
                 && encryptionService.matches(jwt, userJwt.getContent());
@@ -146,10 +142,6 @@ public class JwtUtil {
 
     public String extractUsername(String jwt) {
         return extractClaim(jwt, Claims::getSubject);
-    }
-
-    private String extractUniqueName(String jwt) {
-        return extractClaim(jwt, claims -> claims.get("uniqueName", String.class));
     }
 
     private TokenTargetType extractTokenTargetType(String jwt) {

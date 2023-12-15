@@ -54,16 +54,30 @@ public class SecurityConfig {
                                             "/api/hello"
                                     ).permitAll()
 
-                                    .requestMatchers("/users/**").hasAnyRole(
+                                    .requestMatchers(
+                                            "/api/ws/**",
+                                            "/api/app/**"
+                                    ).permitAll()
+
+                                    .requestMatchers(
+                                            "/api/user/**",
+                                            "/api/users/**"
+                                    ).hasAnyRole(
                                             Role.USER.name(),
                                             Role.ADMIN.name(),
                                             Role.ROOT.name()
                                     )
-                                    .requestMatchers("/admin/**").hasAnyRole(
+                                    .requestMatchers(
+                                            "/api/admin/**",
+                                            "/api/admins/**"
+                                    ).hasAnyRole(
                                             Role.ADMIN.name(),
                                             Role.ROOT.name()
                                     )
-                                    .requestMatchers("/root/**").hasRole(Role.ROOT.name())
+                                    .requestMatchers(
+                                            "/api/root/**",
+                                            "/api/roots/**"
+                                    ).hasRole(Role.ROOT.name())
 
                                     .anyRequest().authenticated();
 

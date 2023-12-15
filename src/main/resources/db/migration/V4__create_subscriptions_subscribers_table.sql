@@ -4,5 +4,6 @@ CREATE TABLE subscriptions_subscribers (
     subscription_id UUID NOT NULL,
     subscriber_id UUID NOT NULL,
     FOREIGN KEY (subscription_id) REFERENCES users (id) ON DELETE CASCADE,
-    FOREIGN KEY (subscriber_id) REFERENCES users (id) ON DELETE CASCADE
+    FOREIGN KEY (subscriber_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT subscriptions_subscribers_unique_constraint UNIQUE (subscription_id, subscriber_id)
 );

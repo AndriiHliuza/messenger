@@ -1,8 +1,10 @@
 package com.app.messenger.security.handler;
 
 import com.app.messenger.security.exception.PasswordNotFoundException;
+import com.app.messenger.security.exception.PasswordNotValidException;
 import com.app.messenger.security.exception.UserAlreadyExistsException;
 import com.app.messenger.handler.dto.ExceptionResponse;
+import com.app.messenger.security.exception.UserNotAuthenticatedException;
 import io.jsonwebtoken.security.SignatureException;
 import org.hibernate.PropertyValueException;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,7 @@ public class SecurityExceptionHandler {
     @ExceptionHandler(value = {
             UserAlreadyExistsException.class,
             PasswordNotFoundException.class,
+            PasswordNotValidException.class,
             PropertyValueException.class
     })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -42,7 +45,8 @@ public class SecurityExceptionHandler {
 
     @ExceptionHandler(value = {
             UsernameNotFoundException.class,
-            BadCredentialsException.class
+            BadCredentialsException.class,
+            UserNotAuthenticatedException.class
     })
     @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
     public ExceptionResponse handleAuthenticationException() {

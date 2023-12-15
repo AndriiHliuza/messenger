@@ -19,7 +19,7 @@ public class UserRegistrationConverter implements Converter<RegistrationRequest,
     private final PasswordEncoder passwordEncoder;
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     @Override
-    public RegistrationRequest toDto(User user) {
+    public RegistrationRequest toDto(User user) throws Exception {
         String birthdayToReturn = null;
 
         LocalDate birthday = user.getBirthday();

@@ -14,7 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Entity
 @Table(name = "subscriptions_subscribers")
-public class SubscriptionSubscribers {
+public class SubscriptionSubscriber {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

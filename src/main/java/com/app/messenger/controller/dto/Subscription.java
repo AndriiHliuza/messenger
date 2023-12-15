@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SubscriptionDto {
+public class Subscription {
     private String subscriptionUniqueName;
     private String subscriberUniqueName;
     private boolean isSubscribed;

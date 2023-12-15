@@ -1,4 +1,4 @@
-package com.app.messenger.security.service;
+package com.app.messenger.service;
 
 import com.app.messenger.exception.CompressionException;
 import com.app.messenger.exception.DecompressionException;
@@ -15,7 +15,6 @@ import java.util.zip.Inflater;
 public class CompressionUtil {
     public byte[] compressByteArray(byte[] arrayToCompress) throws CompressionException {
         byte[] compressedArray;
-
         Deflater deflater = new Deflater();
         deflater.setLevel(Deflater.BEST_COMPRESSION);
         deflater.setInput(arrayToCompress);
@@ -39,7 +38,6 @@ public class CompressionUtil {
 
     public byte[] decompressByteArray(byte[] arrayToDecompress) throws DecompressionException {
         byte[] decompressedArray;
-
         Inflater inflater = new Inflater();
         inflater.setInput(arrayToDecompress);
 
@@ -55,7 +53,6 @@ public class CompressionUtil {
         } catch (IOException | DataFormatException e) {
             throw new DecompressionException("Decompression exception");
         }
-
         return decompressedArray;
     }
 }

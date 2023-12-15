@@ -49,6 +49,15 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Jwt> jwts;
 
+    @OneToMany(mappedBy = "subscriber", cascade = CascadeType.ALL)
+    private List<SubscriptionSubscriber> subscriptions;
+
+    @OneToMany(mappedBy = "subscription", cascade = CascadeType.ALL)
+    private List<SubscriptionSubscriber> subscribers;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private UserImage userImage;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return role.getAuthorities();

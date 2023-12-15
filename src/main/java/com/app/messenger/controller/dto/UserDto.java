@@ -21,4 +21,5 @@ public class UserDto {
     private String lastname;
     private LocalDate birthday;
     private Role role;
+    private UserImageDto userImage;
 }
