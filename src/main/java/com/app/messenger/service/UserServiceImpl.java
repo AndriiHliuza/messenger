@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository
                 .findByRoleAndUsername(role, username)
                 .orElseThrow(
-                        () -> new UserNotFoundException("User with uniqueName " + username + " not found")
+                        () -> new UserNotFoundException("User with username " + username + " not found")
                 );
         return userConverter.toDto(user);
     }
@@ -68,7 +68,7 @@ public class UserServiceImpl implements UserService {
         Sort.Direction sortOrder = Sort.Direction.valueOf(order.toUpperCase());
         Sort sort = Sort.by(sortOrder, "uniqueName");
         Pageable pageable = PageRequest.of(page, size, sort);
-        Collection<User> users = getUsersPagedAndSortedForCurrentAuthenticatedUser(pageable).getContent();
+        Collection<User> users = getUsersPagedAndSortedForCurrentUser(pageable).getContent();
         List<UserDto> usersToReturn = new ArrayList<>();
         for (User user : users) {
             usersToReturn.add(userConverter.toDto(user));
@@ -112,12 +112,12 @@ public class UserServiceImpl implements UserService {
         return userConverter.toDto(user);
     }
 
-    private Page<User> getUsersPagedAndSortedForCurrentAuthenticatedUser(Pageable pageable) throws UserNotAuthenticatedException {
-        UserDetails currentAuthenticatedUser = authenticationService.getAuthenticatedUserFromSecurityContext();
-        if (currentAuthenticatedUser == null) {
+    private Page<User> getUsersPagedAndSortedForCurrentUser(Pageable pageable) throws UserNotAuthenticatedException {
+        UserDetails currentUser = authenticationService.getAuthenticatedUserUserDetailsFromSecurityContext();
+        if (currentUser == null) {
             throw new UserNotAuthenticatedException("User not authenticated");
         }
-        String usernameToExclude = currentAuthenticatedUser.getUsername();
+        String usernameToExclude = currentUser.getUsername();
 
         return userRepository.findAll((root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -181,5 +181,23 @@ public class UserServiceImpl implements UserService {
         }
 
         return subscriptionSubscriberConverter.toDto(storedSubscriptionSubscriber);
+    }
+
+    @Override
+    public Collection<UserDto> findUsersDifferentFromTheCurrentUserByTheirUniqueNameStartingWithPrefix(String prefix, int usersNumber) throws Exception {
+        User currentUser = authenticationService.getCurrentUser();
+        List<User> users = userRepository.findAllByUniqueNameStartingWithAndRole(prefix, Role.USER);
+        List<UserDto> usersToReturn = new ArrayList<>();
+
+        int numberUsersToReturn = Math.min(users.size(), usersNumber);
+
+        for (int i = 0; i < numberUsersToReturn; i++) {
+            User user = users.get(i);
+            if (!currentUser.getUsername().equals(user.getUsername())) {
+                usersToReturn.add(userConverter.toDto(user));
+            }
+        }
+
+        return usersToReturn;
     }
 }

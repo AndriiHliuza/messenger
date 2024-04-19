@@ -1,0 +1,7 @@
+DROP TABLE IF EXISTS chats CASCADE;
+CREATE TABLE chats (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(128) NOT NULL,
+    type VARCHAR(128) NOT NULL,
+    CONSTRAINT chats_type_check CHECK(type IN ('PRIVATE_CHAT', 'GROUP_CHAT'))
+);

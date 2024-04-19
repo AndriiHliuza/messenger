@@ -1,5 +1,6 @@
 package com.app.messenger.service;
 
+import com.app.messenger.repository.model.Status;
 import com.app.messenger.security.exception.PasswordNotFoundException;
 import com.app.messenger.repository.model.Role;
 import com.app.messenger.repository.model.User;
@@ -17,7 +18,7 @@ import java.time.format.DateTimeFormatter;
 public class UserRegistrationConverter implements Converter<RegistrationRequest, User> {
 
     private final PasswordEncoder passwordEncoder;
-    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private final DateTimeFormatter dateTimeFormatter;
     @Override
     public RegistrationRequest toDto(User user) throws Exception {
         String birthdayToReturn = null;
@@ -60,6 +61,7 @@ public class UserRegistrationConverter implements Converter<RegistrationRequest,
                 .lastname(registrationRequest.getLastname())
                 .birthday(birthday)
                 .role(Role.USER)
+                .status(Status.OFFLINE)
                 .build();
     }
 }

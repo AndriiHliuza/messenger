@@ -2,6 +2,7 @@ package com.app.messenger.config;
 
 import com.app.messenger.repository.UserRepository;
 import com.app.messenger.repository.model.Role;
+import com.app.messenger.repository.model.Status;
 import com.app.messenger.repository.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Configuration
 @RequiredArgsConstructor
@@ -41,6 +43,7 @@ public class ApplicationConfig {
                         .firstname("root")
                         .lastname("root")
                         .role(Role.ROOT)
+                        .status(Status.OFFLINE)
                         .build();
 
                 userRepository.save(root);
@@ -57,10 +60,16 @@ public class ApplicationConfig {
                         .firstname("admin")
                         .lastname("admin")
                         .role(Role.ADMIN)
+                        .status(Status.OFFLINE)
                         .build();
 
                 userRepository.save(admin);
             }
         };
+    }
+
+    @Bean
+    public DateTimeFormatter dateTimeFormatter() {
+        return DateTimeFormatter.ofPattern("yyyy-MM-dd");
     }
 }

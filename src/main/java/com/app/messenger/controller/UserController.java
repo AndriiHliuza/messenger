@@ -73,7 +73,7 @@ public class UserController {
     }
 
     @GetMapping("/users/{uniqueName}/image")
-    @PreAuthorize("hasAuthority('UPDATE_USER')")
+    @PreAuthorize("hasAuthority('READ_USER')")
     public ResponseEntity<byte[]> getUserImage(@PathVariable String uniqueName) throws Exception {
         UserImageDto userImageDto = userImageService.getUserImage(uniqueName);
         return ResponseEntity
@@ -83,7 +83,7 @@ public class UserController {
     }
 
     @GetMapping("/users/{uniqueName}/image/metadata")
-    @PreAuthorize("hasAuthority('UPDATE_USER')")
+    @PreAuthorize("hasAuthority('READ_USER')")
     public UserImageDto getUserImageMetadata(@PathVariable String uniqueName) throws Exception {
         return userImageService.getUserImage(uniqueName);
     }
@@ -107,10 +107,20 @@ public class UserController {
     }
 
     @DeleteMapping("/users/{userUniqueName}/subscriptions/{userSubscriptionUniqueName}")
+    @PreAuthorize("hasRole('USER')")
     public Subscription unsubscribe(
             @PathVariable String userUniqueName,
             @PathVariable String userSubscriptionUniqueName
     ) throws Exception {
         return userService.unsubscribe(userUniqueName, userSubscriptionUniqueName);
+    }
+
+    @GetMapping("/users/uniqueNames")
+    @PreAuthorize("hasAuthority('READ_USER')")
+    public Collection<UserDto> findUsersDifferentFromTheCurrentUserByTheirUniqueNameStartingWithPrefix(
+            @RequestParam String prefix,
+            @RequestParam(defaultValue = "5") int usersNumber
+    ) throws Exception {
+        return userService.findUsersDifferentFromTheCurrentUserByTheirUniqueNameStartingWithPrefix(prefix, usersNumber);
     }
 }

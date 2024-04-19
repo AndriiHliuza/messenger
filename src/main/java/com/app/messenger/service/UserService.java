@@ -25,4 +25,5 @@ public interface UserService {
     Subscription subscribe(String subscriberUniqueName, Subscription subscription) throws Exception;
     Subscription isSubscribed(String userUniqueName, String userSubscriptionUniqueName) throws Exception;
     Subscription unsubscribe(String userUniqueName, String userSubscriptionUniqueName) throws Exception;
+    Collection<UserDto> findUsersDifferentFromTheCurrentUserByTheirUniqueNameStartingWithPrefix(String prefix, int usersNumber) throws Exception;
 }

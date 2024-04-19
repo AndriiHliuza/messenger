@@ -9,6 +9,7 @@ import com.app.messenger.repository.model.User;
 import com.app.messenger.security.controller.dto.AuthenticationRequest;
 import com.app.messenger.security.controller.dto.AuthenticationResponse;
 import com.app.messenger.security.controller.dto.RegistrationRequest;
+import com.app.messenger.security.exception.UserNotAuthenticatedException;
 import com.app.messenger.service.UserRegistrationConverter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -85,12 +86,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .build();
     }
 
-    public UserDetails getAuthenticatedUserFromSecurityContext() {
+    @Override
+    public UserDetails getAuthenticatedUserUserDetailsFromSecurityContext() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails authenticatedUser = null;
         if (authentication != null) {
             authenticatedUser = (UserDetails) authentication.getPrincipal();
         }
         return authenticatedUser;
+    }
+
+    @Override
+    public User getCurrentUser() throws UserNotAuthenticatedException {
+        UserDetails currentUserUserDetails = getAuthenticatedUserUserDetailsFromSecurityContext();
+        if (currentUserUserDetails == null) {
+            throw new UserNotAuthenticatedException("User not authenticated");
+        }
+
+        return (User) currentUserUserDetails;
     }
 }

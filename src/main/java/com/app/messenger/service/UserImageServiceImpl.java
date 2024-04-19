@@ -21,6 +21,13 @@ public class UserImageServiceImpl implements UserImageService {
                 .orElseThrow(
                         () -> new UserNotFoundException("User with uniqueName " + uniqueName + " not found")
                 );
-        return userImageConverter.toDto(userImageRepository.findByUser(user));
+        UserImageDto userImageDto = userImageConverter.toDto(userImageRepository.findByUser(user));
+        if (userImageDto == null) {
+            userImageDto = UserImageDto
+                    .builder()
+                    .type("application/octet-stream")
+                    .build();
+        }
+        return userImageDto;
     }
 }

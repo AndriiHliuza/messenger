@@ -1,5 +1,8 @@
 package com.app.messenger.repository.model;
 
+import com.app.messenger.websocket.repository.model.ChatMember;
+import com.app.messenger.websocket.repository.model.Message;
+import com.app.messenger.websocket.repository.model.MessageStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -46,6 +49,9 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Jwt> jwts;
 
@@ -57,6 +63,15 @@ public class User implements UserDetails {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private UserImage userImage;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<ChatMember> chats;
+
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
+    private List<Message> messages;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<MessageStatus> messageStatuses;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
