@@ -2,6 +2,7 @@ package com.app.messenger.security.service;
 
 import com.app.messenger.repository.model.User;
 import com.app.messenger.security.controller.dto.E2EEDto;
+import com.app.messenger.security.exception.E2EEKeyNotFoundException;
 import com.app.messenger.websocket.controller.dto.CryptoKeysContainer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -60,17 +61,22 @@ public class E2EEServiceImpl implements E2EEService {
 
     private PublicKey getPublicKey() throws Exception {
         User currentUser = authenticationService.getCurrentUser();
-        return cryptoKeysContainers.get(currentUser.getId()).getUserPublicKey();
+        CryptoKeysContainer cryptoKeysContainer = cryptoKeysContainers.get(currentUser.getId());
+        return cryptoKeysContainer != null ? cryptoKeysContainer.getUserPublicKey() : null;
     }
 
     private PrivateKey getPrivateKey() throws Exception {
         User currentUser = authenticationService.getCurrentUser();
-        return cryptoKeysContainers.get(currentUser.getId()).getServerPrivateKey();
+        CryptoKeysContainer cryptoKeysContainer = cryptoKeysContainers.get(currentUser.getId());
+        return cryptoKeysContainer != null ? cryptoKeysContainer.getServerPrivateKey() : null;
     }
 
     @Override
     public String encrypt(String plainText) throws Exception {
         PublicKey publicKey = getPublicKey();
+        if (publicKey == null) {
+            throw new E2EEKeyNotFoundException("User's public encryption key does not exist");
+        }
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
         byte[] encryptedBytes = cipher.doFinal(plainText.getBytes());
@@ -80,6 +86,9 @@ public class E2EEServiceImpl implements E2EEService {
     @Override
     public String decrypt(String encryptedText) throws Exception {
         PrivateKey privateKey = getPrivateKey();
+        if (privateKey == null) {
+            throw new E2EEKeyNotFoundException("Server's private encryption key does not exist");
+        }
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
         byte[] encryptedBytes = Base64.getDecoder().decode(encryptedText);

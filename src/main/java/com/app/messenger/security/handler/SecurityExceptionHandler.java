@@ -1,10 +1,7 @@
 package com.app.messenger.security.handler;
 
-import com.app.messenger.security.exception.PasswordNotFoundException;
-import com.app.messenger.security.exception.PasswordNotValidException;
-import com.app.messenger.security.exception.UserAlreadyExistsException;
+import com.app.messenger.security.exception.*;
 import com.app.messenger.handler.dto.ExceptionResponse;
-import com.app.messenger.security.exception.UserNotAuthenticatedException;
 import io.jsonwebtoken.security.SignatureException;
 import org.hibernate.PropertyValueException;
 import org.springframework.http.HttpStatus;
@@ -66,6 +63,17 @@ public class SecurityExceptionHandler {
         return ExceptionResponse
                 .builder()
                 .message("Request failed due to server side error")
+                .build();
+    }
+
+    @ExceptionHandler(value = {
+            E2EEKeyNotFoundException.class
+    })
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionResponse handleE2EEExceptions() {
+        return ExceptionResponse
+                .builder()
+                .message("Encryption key is absent")
                 .build();
     }
 }

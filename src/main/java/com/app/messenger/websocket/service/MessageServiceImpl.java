@@ -2,6 +2,7 @@ package com.app.messenger.websocket.service;
 
 import com.app.messenger.controller.dto.UserDto;
 import com.app.messenger.repository.model.User;
+import com.app.messenger.security.exception.E2EEKeyNotFoundException;
 import com.app.messenger.security.service.AuthenticationService;
 import com.app.messenger.security.service.E2EEService;
 import com.app.messenger.service.MessageConverter;
@@ -132,11 +133,16 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public Collection<MessageDto> encryptAllMessagesUsingE2EEWithCurrentUserPublicKey(Collection<MessageDto> messagesToEncrypt) throws Exception {
-        for (MessageDto messageDto : messagesToEncrypt) {
-            String content = messageDto.getContent();
-            String encryptedContent = e2eeService.encrypt(content);
-            messageDto.setContent(encryptedContent);
+        try {
+            for (MessageDto messageDto : messagesToEncrypt) {
+                String content = messageDto.getContent();
+                String encryptedContent = e2eeService.encrypt(content);
+                messageDto.setContent(encryptedContent);
+            }
+        } catch (E2EEKeyNotFoundException e) {
+            messagesToEncrypt.forEach(messageDto -> messageDto.setContent(null));
         }
+
         return messagesToEncrypt;
     }
 
