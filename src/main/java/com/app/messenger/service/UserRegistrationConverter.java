@@ -1,6 +1,5 @@
 package com.app.messenger.service;
 
-import com.app.messenger.repository.model.Status;
 import com.app.messenger.security.exception.PasswordNotFoundException;
 import com.app.messenger.repository.model.Role;
 import com.app.messenger.repository.model.User;
@@ -61,7 +60,6 @@ public class UserRegistrationConverter implements Converter<RegistrationRequest,
                 .lastname(registrationRequest.getLastname())
                 .birthday(birthday)
                 .role(Role.USER)
-                .status(Status.OFFLINE)
                 .build();
     }
 }

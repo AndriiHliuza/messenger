@@ -1,7 +1,10 @@
 package com.app.messenger.repository.model;
 
+import lombok.Getter;
+
 import java.util.Arrays;
 
+@Getter
 public enum ImageType {
     JPEG("jpeg"),
     PNG("png"),
@@ -13,10 +16,6 @@ public enum ImageType {
 
     ImageType(String value) {
         this.value = "image/" + value;
-    }
-
-    public String getValue() {
-        return value;
     }
 
     public static ImageType getImageTypeByValue(String value) {

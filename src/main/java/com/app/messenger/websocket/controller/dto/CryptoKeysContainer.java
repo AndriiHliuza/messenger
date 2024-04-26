@@ -9,7 +9,6 @@ import java.security.PublicKey;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
 public class CryptoKeysContainer {
     private PrivateKey serverPrivateKey;
     private PublicKey serverPublicKey;

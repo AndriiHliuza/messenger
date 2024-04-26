@@ -1,6 +1,8 @@
 package com.app.messenger.websocket.controller;
 
+import com.app.messenger.controller.dto.UserDto;
 import com.app.messenger.websocket.controller.dto.ChatDto;
+import com.app.messenger.websocket.controller.dto.ChatMemberDto;
 import com.app.messenger.websocket.controller.dto.MessageDto;
 import com.app.messenger.websocket.service.ChatService;
 import lombok.RequiredArgsConstructor;
@@ -45,13 +47,60 @@ public class ChatController {
         return chatService.getChatById(chatId);
     }
 
-    @GetMapping("/api/private-chats/{anotherUserUniqueName}")
+    @PatchMapping("/api/chats/{chatId}")
     @PreAuthorize("hasRole('USER')")
     @ResponseStatus(HttpStatus.OK)
-    public ChatDto getCurrentUserPrivateChatWithAnotherUserByAnotherUserUniqueName(
-            @PathVariable String anotherUserUniqueName
+    public ChatDto updateChat(
+            @PathVariable String chatId,
+            @RequestBody ChatDto chatDto
     ) throws Exception {
-        return chatService.getCurrentUserPrivateChatWithAnotherUserByAnotherUserUniqueName(anotherUserUniqueName);
+        return chatService.updateChat(chatId, chatDto);
+    }
+
+    @DeleteMapping("/api/chats/{chatId}")
+    @PreAuthorize("hasRole('USER')")
+    @ResponseStatus(HttpStatus.OK)
+    public ChatDto deleteChat(@PathVariable String chatId) throws Exception {
+        return chatService.deleteChat(chatId);
+    }
+
+    @PostMapping("/api/chats/{chatId}/members/{username}")
+    @PreAuthorize("hasRole('USER')")
+    @ResponseStatus(HttpStatus.OK)
+    public ChatMemberDto addUserToChat(
+            @PathVariable String chatId,
+            @PathVariable String username,
+            @RequestBody UserDto user
+    ) throws Exception {
+        return chatService.addUserToChat(chatId, username, user);
+    }
+
+    @PatchMapping("/api/chats/{chatId}/members/{username}")
+    @PreAuthorize("hasRole('USER')")
+    public ChatMemberDto updateChatMember(
+            @PathVariable String chatId,
+            @PathVariable String username,
+            @RequestBody ChatMemberDto chatMemberDto
+    ) throws Exception {
+        return chatService.updateChatMember(chatId, username, chatMemberDto);
+    }
+
+    @DeleteMapping("/api/chats/{chatId}/members/{username}")
+    @PreAuthorize("hasRole('USER')")
+    public ChatMemberDto deleteChatMember(
+            @PathVariable String chatId,
+            @PathVariable String username
+    ) throws Exception {
+        return chatService.deleteChatMember(chatId, username);
+    }
+
+    @GetMapping("/api/private-chats/{anotherUserUsername}")
+    @PreAuthorize("hasRole('USER')")
+    @ResponseStatus(HttpStatus.OK)
+    public ChatDto getCurrentUserPrivateChatWithAnotherUserByAnotherUserUsername(
+            @PathVariable String anotherUserUsername
+    ) throws Exception {
+        return chatService.getCurrentUserPrivateChatWithAnotherUserByAnotherUserUsername(anotherUserUsername);
     }
 
     @MessageMapping("/official-channel") // endpoint /api/messaging/official-channel

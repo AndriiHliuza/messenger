@@ -32,12 +32,12 @@ public interface ChatRepository extends JpaRepository<Chat, UUID> {
     @Query("""
             SELECT c FROM Chat c
             JOIN ChatMember cm1 ON c.id = cm1.chat.id
-            JOIN User u1 ON cm1.member.id = u1.id AND u1.uniqueName = :firstMemberUniqueName
+            JOIN User u1 ON cm1.member.id = u1.id AND u1.username = :firstMemberUsername
             JOIN ChatMember cm2 ON c.id = cm2.chat.id
-            JOIN User u2 ON cm2.member.id = u2.id AND u2.uniqueName = :secondMemberUniqueName
+            JOIN User u2 ON cm2.member.id = u2.id AND u2.username = :secondMemberUsername
             WHERE c.type = 'PRIVATE_CHAT'
             """)
-    Chat findPrivateChatByPrivateChatMembersUniqueNames(String firstMemberUniqueName, String secondMemberUniqueName);
+    Chat findPrivateChatByPrivateChatMembersUsernames(String firstMemberUsername, String secondMemberUsername);
 
     @Query("""
             SELECT c FROM Chat c 

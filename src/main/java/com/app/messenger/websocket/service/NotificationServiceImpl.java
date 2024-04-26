@@ -24,7 +24,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final UserRepository userRepository;
 
     @Override
-    public void processAndSendNotificationToUser(NotificationDto notificationDto) throws UserNotFoundException {
+    public void processAndSendNotificationToUser(NotificationDto notificationDto) {
         NotificationDto notificationDtoToBeSendToUser = processAndBuildNotificationDtoToBeSendToUser(notificationDto);
 
         if (notificationDtoToBeSendToUser != null) {
@@ -37,14 +37,14 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void processAndSendNotificationToUsers(NotificationDto notificationDto, Collection<UserDto> usersToNotify) throws UserNotFoundException {
+    public void processAndSendNotificationToUsers(NotificationDto notificationDto, Collection<UserDto> usersToNotify) {
         for (UserDto userToNotify : usersToNotify) {
             notificationDto.setReceiverUsername(userToNotify.getUsername());
             processAndSendNotificationToUser(notificationDto);
         }
     }
 
-    private NotificationDto processAndBuildNotificationDtoToBeSendToUser(NotificationDto notificationDto) throws UserNotFoundException {
+    private NotificationDto processAndBuildNotificationDtoToBeSendToUser(NotificationDto notificationDto) {
         try {
             String notificationReceiverUsername = notificationDto.getReceiverUsername();
             User notificationReceiver = userRepository
@@ -61,7 +61,13 @@ public class NotificationServiceImpl implements NotificationService {
             NotificationType type = NotificationType.valueOf(notificationDto.getType().toUpperCase());
 
             NotificationDto notificationDtoToReturn;
-            if (notificationDto instanceof ChatNotificationDto chatNotificationDto && type.equals(NotificationType.NEW_CHAT_NOTIFICATION)) {
+            if (notificationDto instanceof ChatNotificationDto chatNotificationDto
+                    && (type.equals(NotificationType.NEW_CHAT_NOTIFICATION)
+                    || type.equals(NotificationType.DELETED_GROUP_CHAT_NOTIFICATION)
+                    || type.equals(NotificationType.DELETED_PRIVATE_CHAT_NOTIFICATION)
+                    || type.equals(NotificationType.NEW_ADMIN_IN_CHAT_NOTIFICATION)
+                    || type.equals(NotificationType.DELETED_CHAT_MEMBER_NOTIFICATION)
+                    || type.equals(NotificationType.MEMBER_LEFT_CHAT_NOTIFICATION))) {
                 notificationDtoToReturn = processAndBuildChatNotificationDtoToBeSendToUser(chatNotificationDto);
             } else {
                 notificationDtoToReturn = NotificationDto
@@ -91,7 +97,9 @@ public class NotificationServiceImpl implements NotificationService {
                 chatNotificationDto.getContent(),
                 chatNotificationDto.getTime(),
                 chatNotificationDto.getType(),
-                checkedChatId
+                checkedChatId,
+                chatNotificationDto.getChatName(),
+                chatNotificationDto.getChatType()
         );
     }
 }

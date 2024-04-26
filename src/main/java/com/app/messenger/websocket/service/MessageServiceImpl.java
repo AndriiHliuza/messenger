@@ -1,12 +1,16 @@
 package com.app.messenger.websocket.service;
 
-import com.app.messenger.controller.dto.UserDto;
+import com.app.messenger.exception.UserNotFoundException;
+import com.app.messenger.repository.UserRepository;
 import com.app.messenger.repository.model.User;
 import com.app.messenger.security.exception.E2EEKeyNotFoundException;
 import com.app.messenger.security.service.AuthenticationService;
 import com.app.messenger.security.service.E2EEService;
+import com.app.messenger.security.service.EncryptionService;
 import com.app.messenger.service.MessageConverter;
+import com.app.messenger.websocket.controller.dto.ChatMessagesStatusUpdateDto;
 import com.app.messenger.websocket.controller.dto.MessageDto;
+import com.app.messenger.websocket.exception.ChatMemberNotFoundException;
 import com.app.messenger.websocket.exception.ChatNotFoundException;
 import com.app.messenger.websocket.exception.MessageNotFoundException;
 import com.app.messenger.websocket.repository.ChatMemberRepository;
@@ -16,17 +20,16 @@ import com.app.messenger.websocket.repository.MessageStatusRepository;
 import com.app.messenger.websocket.repository.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import javax.crypto.Cipher;
-import java.security.*;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService {
 
+    private final UserRepository userRepository;
     private final MessageRepository messageRepository;
     private final MessageStatusRepository messageStatusRepository;
     private final MessageConverter messageConverter;
@@ -34,6 +37,7 @@ public class MessageServiceImpl implements MessageService {
     private final ChatMemberRepository chatMemberRepository;
     private final AuthenticationService authenticationService;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final EncryptionService encryptionService;
     private final E2EEService e2eeService;
 
     @Override
@@ -53,8 +57,12 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    @Transactional
+//    @Transactional
     public MessageDto sendMessageToChat(MessageDto messageDto) throws Exception {
+        if (!messageDto.getType().equals(MessageType.NEW_MESSAGE)) {
+            throw new IllegalArgumentException("Invalid message type");
+        }
+
         String decryptedText = e2eeService.decrypt(messageDto.getContent());
         messageDto.setContent(decryptedText);
 
@@ -100,32 +108,78 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    @Transactional
-    public MessageDto deleteMessageInChat(String chatId, String messageId) throws Exception {
+    public MessageDto updateMessageInChat(String chatId, String messageId, MessageDto messageDto) throws Exception {
+        MessageDto messageDtoToReturn = null;
+        if (!messageDto.getType().equals(MessageType.MODIFIED_MESSAGE)) {
+            throw new IllegalArgumentException("Illegal message type");
+        }
         UUID convertedChatId = UUID.fromString(chatId);
         UUID convertedMessageId = UUID.fromString(messageId);
 
+        if (!chatRepository.existsById(convertedChatId)) {
+            throw new ChatNotFoundException("Chat with id " + chatId + " not found");
+        }
+
         User currentUser = authenticationService.getCurrentUser();
+        Message message = messageRepository
+                .findByIdAndSenderIdAndChatId(convertedMessageId, currentUser.getId(), convertedChatId)
+                .orElseThrow(
+                        () -> new MessageNotFoundException("Message with id " + messageId
+                                + " and sender id " + currentUser.getId()
+                                + " not found in chat with id " + chatId)
+                );
+
+        String decryptedText = e2eeService.decrypt(messageDto.getContent());
+        String encryptedContent = encryptionService.encrypt(decryptedText);
+        String previousEncryptedContent = message.getContent();
+        if (encryptedContent.equals(previousEncryptedContent)) {
+            throw new IllegalArgumentException("New message content is equal to the previously saved message content");
+        }
+        message.setContent(encryptedContent);
+        Message savedMessage = messageRepository.save(message);
+        messageDtoToReturn = messageConverter.toDto(savedMessage);
+        String encryptedText = e2eeService.encrypt(messageDtoToReturn.getContent());
+        messageDtoToReturn.setContent(encryptedText);
+        processAndSendMessageToChat(messageDtoToReturn);
+
+        return messageDtoToReturn;
+    }
+
+    @Override
+//    @Transactional
+    public MessageDto deleteMessageInChat(String chatId, String messageId) throws Exception {
         MessageDto messageDtoToReturn = null;
-        if (chatRepository.existsById(convertedChatId)) {
-            Message message = messageRepository
-                    .findById(convertedMessageId)
-                    .orElseThrow(
-                            () -> new MessageNotFoundException("Message with id " + messageId + " does not exist")
-                    );
-            if (message != null) {
-                UUID returnedMessageChatId = message.getChat().getId();
-                UUID returnedMessageSenderId = message.getSender().getId();
-                if (returnedMessageSenderId.equals(currentUser.getId()) &&
-                        returnedMessageChatId.equals(convertedChatId)) {
-                    messageDtoToReturn = messageConverter.toDto(message);
-                    String encryptedText = e2eeService.encrypt(messageDtoToReturn.getContent());
-                    messageDtoToReturn.setContent(encryptedText);
-                    messageDtoToReturn.setType(MessageType.DELETED_CHAT_MESSAGE);
-                    messageRepository.deleteById(message.getId());
-                    processAndSendMessageToChat(messageDtoToReturn);
-                }
-            }
+
+        UUID convertedChatId = UUID.fromString(chatId);
+        UUID convertedMessageId = UUID.fromString(messageId);
+
+        if (!chatRepository.existsById(convertedChatId)) {
+            throw new ChatNotFoundException("Chat with id " + chatId + " not found");
+        }
+
+        Message message = messageRepository
+                .findByIdAndChatId(convertedMessageId, convertedChatId)
+                .orElseThrow(
+                        () -> new MessageNotFoundException("Message with id " + messageId
+                                + " not found in chat with id " + chatId)
+                );
+        User messageSender = message.getSender();
+
+        User currentUser = authenticationService.getCurrentUser();
+        ChatMember chatMember = chatMemberRepository
+                .findByChatIdAndMemberUsername(convertedChatId, currentUser.getUsername())
+                .orElseThrow(
+                        () -> new ChatMemberNotFoundException("Chat member with member id " + currentUser.getId()
+                                + " not found in chat with id " + chatId)
+                );
+
+        if (currentUser.getId().equals(messageSender.getId()) || chatMember.getMemberRole().equals(MemberRole.ADMIN)) {
+            messageDtoToReturn = messageConverter.toDto(message);
+            String encryptedText = e2eeService.encrypt(messageDtoToReturn.getContent());
+            messageDtoToReturn.setContent(encryptedText);
+            messageDtoToReturn.setType(MessageType.DELETED_MESSAGE);
+            messageRepository.deleteById(message.getId());
+            processAndSendMessageToChat(messageDtoToReturn);
         }
 
         return messageDtoToReturn;
@@ -146,40 +200,157 @@ public class MessageServiceImpl implements MessageService {
         return messagesToEncrypt;
     }
 
-    private void processAndSendMessageToChat(MessageDto messageDto) {
-        UserDto sender = messageDto.getSender();
+    @Override
+    public void processAndSendMessageToChat(MessageDto messageDto) {
         String chatId = messageDto.getChatId();
-        String messageId = messageDto.getId();
-        String content = messageDto.getContent();
-        String sendTime = messageDto.getSendTime();
-        MessageType messageType = messageDto.getType();
-
-        if (sender == null) {
-            throw new IllegalArgumentException("Message sender is null");
-        } else if (chatId == null) {
-            throw new IllegalArgumentException("Message chatId in null");
-        } else if (messageId == null) {
-            throw new IllegalArgumentException("Message id is null");
-        } else if (content == null || content.isBlank()) {
-            throw new IllegalArgumentException("Message content is null or blank");
-        } else if (sendTime == null) {
-            throw new IllegalArgumentException("Message time is null");
-        } else if (messageType == null) {
-            throw new IllegalArgumentException("Message type is null");
-        }
-
         simpMessagingTemplate.convertAndSend(
                 "/api/messaging/topic/chats/" + chatId + "/messages",
                 MessageDto
                         .builder()
-                        .id(messageId)
-                        .sender(sender)
+                        .id(messageDto.getId())
+                        .sender(messageDto.getSender())
                         .chatId(chatId)
-                        .content(content)
-                        .sendTime(sendTime)
-                        .type(messageType)
+                        .content(messageDto.getContent())
+                        .sendTime(messageDto.getSendTime())
+                        .type(messageDto.getType())
                         .status(Status.UNREAD_MESSAGE)
                         .build()
         );
+    }
+
+    @Override
+    public void createMessagesStatusesForUserInChat(
+            String username,
+            UserType userType,
+            UUID chatId,
+            Status status
+    ) throws Exception {
+
+        if (userType == null || status == null) {
+            throw new IllegalArgumentException("User type or message status are null");
+        }
+
+        User user = userRepository
+                .findByUsername(username)
+                .orElseThrow(
+                        () -> new UserNotFoundException("User with username " + username + " not found")
+                );
+
+        Chat chat = chatRepository
+                .findById(chatId)
+                .orElseThrow(
+                        () -> new ChatNotFoundException("Chat with id " + chatId + " not found")
+                );
+
+        List<MessageStatus> unreadMessageStatusesForUserInChat = messageStatusRepository.findAllByChatIdAndUserIdAndStatus(
+                chat.getId(),
+                user.getId(),
+                Status.UNREAD_MESSAGE
+        );
+
+        for (MessageStatus messageStatus : unreadMessageStatusesForUserInChat) {
+            messageStatus.setStatus(Status.READ_MESSAGE);
+        }
+        messageStatusRepository.saveAll(unreadMessageStatusesForUserInChat);
+
+//        List<Message> messages = messageRepository.findAllByChat(chat);
+        List<Message> messagesWithNoStatusForUser = messageRepository.findAllMessagesByChatIdThatWereNotSentToUserWithProvidedId(
+                chat.getId(),
+                user.getId()
+        );
+        List<MessageStatus> messageStatuses = messagesWithNoStatusForUser
+                .stream()
+                .map(message -> MessageStatus
+                        .builder()
+                        .message(message)
+                        .user(user)
+                        .userType(userType)
+                        .status(status)
+                        .build())
+                .toList();
+        if (!messageStatuses.isEmpty()) {
+            messageStatusRepository.saveAll(messageStatuses);
+        }
+    }
+
+    @Override
+//    @Transactional
+    public ChatMessagesStatusUpdateDto updateMessagesStatusesInChat(
+            String chatId,
+            ChatMessagesStatusUpdateDto chatMessagesStatusUpdateDto
+    ) throws Exception {
+        if (!chatMessagesStatusUpdateDto.getChatId().equals(chatId)) {
+            throw new IllegalArgumentException("Chat ids are not equal");
+        }
+
+        if (chatMessagesStatusUpdateDto.getStatus() == null) {
+            throw new IllegalArgumentException("Status is null");
+        }
+
+        if (chatMessagesStatusUpdateDto.getStatus().equals(Status.UNREAD_MESSAGE)) {
+            throw new IllegalArgumentException("Can not set status to UNREAD_MESSAGE");
+        }
+
+        UUID convertedChatId = UUID.fromString(chatId);
+        Chat chat = chatRepository
+                .findById(convertedChatId)
+                .orElseThrow(
+                        () -> new ChatNotFoundException("Chat with id " + chatId + " not found")
+                );
+
+        Status status = chatMessagesStatusUpdateDto.getStatus();
+        List<MessageStatus> messageStatuses = messageStatusRepository.findAllByChatIdAndStatus(
+                chat.getId(),
+                Status.UNREAD_MESSAGE
+        );
+
+        List<MessageStatus> messageStatusesToUpdate = new ArrayList<>();
+        User currentUser = authenticationService.getCurrentUser();
+        UUID currentUserId = currentUser.getId();
+        for (MessageStatus messageStatus : messageStatuses) {
+            User user = messageStatus.getUser();
+            UserType userType = messageStatus.getUserType();
+            if ((userType.equals(UserType.SENDER) && !user.getId().equals(currentUserId))
+                    || (userType.equals(UserType.RECEIVER) && user.getId().equals(currentUserId))) {
+                messageStatus.setStatus(status);
+                messageStatusesToUpdate.add(messageStatus);
+            }
+        }
+        messageStatusRepository.saveAll(messageStatusesToUpdate);
+
+        return ChatMessagesStatusUpdateDto
+                .builder()
+                .chatId(chat.getId().toString())
+                .status(Status.READ_MESSAGE)
+                .build();
+    }
+
+    @Override
+    public MessageDto getMessageStatusForUser(String chatId, String messageId, String username) throws Exception {
+        User user = userRepository
+                .findByUsername(username)
+                .orElseThrow(
+                        () -> new UsernameNotFoundException("User with username " + username + " not found")
+                );
+
+        UUID convertedChatId = UUID.fromString(chatId);
+        Chat chat = chatRepository
+                .findById(convertedChatId)
+                .orElseThrow(
+                        () -> new ChatNotFoundException("Chat with chatId " + chatId + " not found")
+                );
+
+        UUID convertedMessageId = UUID.fromString(messageId);
+        if (!messageRepository.existsByIdAndChatId(convertedMessageId, chat.getId())) {
+            throw new MessageNotFoundException("Message with id " + messageId + " not found in chat with id " + chatId);
+        }
+
+        MessageStatus messageStatus = messageStatusRepository
+                .findByMessageIdAndUserId(convertedMessageId, user.getId())
+                .orElseThrow(
+                        () -> new MessageNotFoundException("Message with id " + messageId + " not found for user with id " + user.getId())
+                );
+
+        return messageConverter.toDto(messageStatus.getMessage());
     }
 }

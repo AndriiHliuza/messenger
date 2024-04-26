@@ -3,6 +3,7 @@ package com.app.messenger.service;
 import com.app.messenger.controller.dto.UserDto;
 import com.app.messenger.repository.UserRepository;
 import com.app.messenger.repository.model.User;
+import com.app.messenger.security.exception.UserNotAuthenticatedException;
 import com.app.messenger.security.service.AuthenticationService;
 import com.app.messenger.websocket.controller.dto.ChatDto;
 import com.app.messenger.websocket.controller.dto.ChatMemberDto;
@@ -13,10 +14,7 @@ import com.app.messenger.websocket.repository.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +29,6 @@ public class ChatConverter implements Converter<ChatDto, Chat> {
     @Override
     public ChatDto toDto(Chat chat) throws Exception {
         UUID chatId = chat.getId();
-
         List<ChatMemberDto> convertedChatMembers = new ArrayList<>();
         List<MessageDto> convertedChatMessages = new ArrayList<>();
 
@@ -48,7 +45,7 @@ public class ChatConverter implements Converter<ChatDto, Chat> {
                             .user(userDto)
                             .role(memberRole)
                             .build()
-                    );
+            );
         }
 
 //        List<Message> chatMessages = messageRepository.findAllByChatIdOrderByChatMessageNumber(chatId);
@@ -57,14 +54,14 @@ public class ChatConverter implements Converter<ChatDto, Chat> {
             convertedChatMessages.add(messageConverter.toDto(message));
         }
 
-        return ChatDto
+        return setChatNameForCurrentUser(ChatDto
                 .builder()
                 .id(chat.getId().toString())
                 .name(chat.getName())
                 .type(chat.getType().name())
                 .members(convertedChatMembers)
                 .messages(convertedChatMessages)
-                .build();
+                .build());
     }
 
     @Override
@@ -83,6 +80,7 @@ public class ChatConverter implements Converter<ChatDto, Chat> {
         for (ChatMemberDto chatMemberDto : members) {
             UserDto userDto = chatMemberDto.getUser();
             String username = userDto.getUsername();
+            MemberRole memberRole = chatMemberDto.getRole();
             userRepository
                     .findByUsername(username)
                     .ifPresent(user -> membersToAddToChat.add(
@@ -90,9 +88,12 @@ public class ChatConverter implements Converter<ChatDto, Chat> {
                                     .builder()
                                     .chat(chat)
                                     .member(user)
-                                    .memberRole(MemberRole.MEMBER)
+                                    .memberRole(memberRole)
                                     .build()
                     ));
+        }
+        if (membersToAddToChat.isEmpty()) {
+            throw new IllegalArgumentException("Chat has no members to add");
         }
         membersToAddToChat.add(
                 ChatMember
@@ -105,5 +106,25 @@ public class ChatConverter implements Converter<ChatDto, Chat> {
 
         chat.setMembers(membersToAddToChat);
         return chat;
+    }
+
+    private ChatDto setChatNameForCurrentUser(ChatDto chatDto) throws UserNotAuthenticatedException {
+        User currentUser = authenticationService.getCurrentUser();
+        ChatType chatType = ChatType.valueOf(chatDto.getType().toUpperCase());
+        String chatName = switch (chatType) {
+            case GROUP_CHAT -> chatDto.getName();
+            case PRIVATE_CHAT -> chatDto
+                    .getMembers()
+                    .stream()
+                    .filter(chatMemberDto -> !chatMemberDto
+                            .getUser()
+                            .getUsername()
+                            .equals(currentUser.getUsername()))
+                    .findFirst()
+                    .map(chatMemberDto -> chatMemberDto.getUser().getUniqueName())
+                    .orElseThrow();
+        };
+        chatDto.setName(chatName);
+        return chatDto;
     }
 }

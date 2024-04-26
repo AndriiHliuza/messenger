@@ -48,7 +48,6 @@ public class LogoutHandlerImpl implements LogoutHandler {
 
                 try {
                     if (user != null && jwtUtil.isTokenValid(jwtContent, user)) {
-
                         tokens = jwtRepository.findByUserId(user.getId());
 
                         if (!tokens.isEmpty()) {

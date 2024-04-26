@@ -1,7 +1,6 @@
 package com.app.messenger.service;
 
 import com.app.messenger.controller.dto.UserDto;
-import com.app.messenger.repository.UserRepository;
 import com.app.messenger.repository.model.User;
 import com.app.messenger.security.service.AuthenticationService;
 import com.app.messenger.security.service.EncryptionService;
@@ -9,7 +8,6 @@ import com.app.messenger.websocket.controller.dto.MessageDto;
 import com.app.messenger.websocket.exception.ChatNotFoundException;
 import com.app.messenger.websocket.exception.MessageAccessException;
 import com.app.messenger.websocket.repository.ChatRepository;
-import com.app.messenger.websocket.repository.MessageRepository;
 import com.app.messenger.websocket.repository.MessageStatusRepository;
 import com.app.messenger.websocket.repository.model.*;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +20,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MessageConverter implements Converter<MessageDto, Message> {
     private final ChatRepository chatRepository;
-    private final MessageRepository messageRepository;
     private final UserConverter userConverter;
     private final AuthenticationService authenticationService;
     private final MessageStatusRepository messageStatusRepository;

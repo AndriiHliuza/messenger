@@ -36,7 +36,6 @@ public class UserConverter implements Converter<UserDto, User> {
                 .lastname(user.getLastname())
                 .birthday(birthdayToReturn)
                 .role(user.getRole())
-                .status(user.getStatus())
                 .userImage(userImageDto)
                 .build();
     }
@@ -62,7 +61,6 @@ public class UserConverter implements Converter<UserDto, User> {
                 .lastname(userDto.getLastname())
                 .birthday(birthday)
                 .role(userDto.getRole())
-                .status(userDto.getStatus())
                 .userImage(userImage)
                 .build();
     }

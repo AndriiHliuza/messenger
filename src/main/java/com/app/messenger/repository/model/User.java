@@ -49,8 +49,8 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Enumerated(EnumType.STRING)
-    private Status status;
+//    @Enumerated(EnumType.STRING)
+//    private Status status;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Jwt> jwts;

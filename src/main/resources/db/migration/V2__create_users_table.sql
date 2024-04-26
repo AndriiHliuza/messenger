@@ -9,8 +9,6 @@ CREATE TABLE users (
     lastname VARCHAR(128) NOT NULL,
     birthday DATE,
     role VARCHAR(128) NOT NULL DEFAULT 'USER',
-    status VARCHAR(128) NOT NULL DEFAULT 'OFFLINE',
     CONSTRAINT users_username_check CHECK(username ~*'^[^[:space:]]+@[^[:space:]]+$'),
-    CONSTRAINT users_role_check CHECK(role IN ('USER', 'ADMIN', 'ROOT')),
-    CONSTRAINT users_status_check CHECK (status IN ('ONLINE', 'OFFLINE'))
+    CONSTRAINT users_role_check CHECK(role IN ('USER', 'ADMIN', 'ROOT'))
 );

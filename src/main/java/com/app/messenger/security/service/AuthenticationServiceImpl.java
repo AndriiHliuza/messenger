@@ -1,5 +1,7 @@
 package com.app.messenger.security.service;
 
+import com.app.messenger.controller.dto.UserDto;
+import com.app.messenger.security.controller.dto.RegistrationResponse;
 import com.app.messenger.security.exception.UserAlreadyExistsException;
 import com.app.messenger.repository.JwtRepository;
 import com.app.messenger.repository.UserRepository;
@@ -10,6 +12,7 @@ import com.app.messenger.security.controller.dto.AuthenticationRequest;
 import com.app.messenger.security.controller.dto.AuthenticationResponse;
 import com.app.messenger.security.controller.dto.RegistrationRequest;
 import com.app.messenger.security.exception.UserNotAuthenticatedException;
+import com.app.messenger.service.UserConverter;
 import com.app.messenger.service.UserRegistrationConverter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,11 +33,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final UserRepository userRepository;
     private final JwtRepository jwtRepository;
     private final UserRegistrationConverter userRegistrationConverter;
+    private final UserConverter userConverter;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
 
     @Override
-    public AuthenticationResponse register(RegistrationRequest registrationRequest) throws Exception {
+    public RegistrationResponse register(RegistrationRequest registrationRequest) throws Exception {
         if (userRepository.existsByUsername(registrationRequest.getUsername())) {
             throw new UserAlreadyExistsException("User with username " + registrationRequest.getUsername() + " already exists in database");
         } else if (userRepository.existsByUniqueName(registrationRequest.getUniqueName())) {
@@ -44,8 +48,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User userToSave = userRegistrationConverter.toEntity(registrationRequest);
         User savedUser = userRepository.save(userToSave);
         log.debug("New user with username: {} was saved to database", savedUser.getUsername());
+        UserDto registeredUserDto = userConverter.toDto(savedUser);
 
-        return buildAuthenticationResponse(savedUser);
+        return RegistrationResponse
+                .builder()
+                .user(registeredUserDto)
+                .isRegistrationSuccessful(true)
+                .build();
     }
 
     @Override
@@ -61,7 +70,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .findByUsername(authenticationRequest.getUsername())
                 .orElseThrow(
                         () -> new UsernameNotFoundException(
-                                        "User with username: "
+                                "User with username: "
                                         + authenticationRequest.getUsername() +
                                         "was not found in database"
                         )

@@ -14,7 +14,7 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/registration")
-    public AuthenticationResponse register(
+    public RegistrationResponse register(
             @RequestBody RegistrationRequest registrationRequest
     ) throws Exception {
         return authenticationService.register(registrationRequest);

@@ -3,7 +3,6 @@ package com.app.messenger.service;
 import com.app.messenger.controller.dto.UserImageDto;
 import com.app.messenger.exception.InvalidImageTypeException;
 import com.app.messenger.exception.UserNotFoundException;
-import com.app.messenger.repository.UserImageRepository;
 import com.app.messenger.repository.UserRepository;
 import com.app.messenger.repository.model.ImageType;
 import com.app.messenger.repository.model.User;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 public class UserImageConverter implements Converter<UserImageDto, UserImage> {
 
     private final UserRepository userRepository;
-    private final UserImageRepository userImageRepository;
     private final CompressionUtil compressionUtil;
 
     @Override
