@@ -1,6 +1,5 @@
 package com.app.messenger.websocket.controller.dto;
 
-import com.app.messenger.controller.dto.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

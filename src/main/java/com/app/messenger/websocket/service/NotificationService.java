@@ -1,7 +1,6 @@
 package com.app.messenger.websocket.service;
 
 import com.app.messenger.controller.dto.UserDto;
-import com.app.messenger.exception.UserNotFoundException;
 import com.app.messenger.websocket.controller.dto.ChatDto;
 import com.app.messenger.websocket.controller.dto.ChatMemberDto;
 import com.app.messenger.websocket.controller.dto.notifications.MultiUserNotificationDto;

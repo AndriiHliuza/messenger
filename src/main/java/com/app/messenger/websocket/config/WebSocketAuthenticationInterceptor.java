@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
@@ -14,7 +13,6 @@ import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.WebSocketSession;
 
 import java.util.List;
 
@@ -28,8 +26,6 @@ public class WebSocketAuthenticationInterceptor implements ChannelInterceptor {
     @Override
     public Message<?> preSend(@NonNull Message<?> message, @NonNull MessageChannel channel) {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-//        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
-//        SimpMessageHeaderAccessor accessor = SimpMessageHeaderAccessor.wrap(message);
         List<StompCommand> stompCommands = List.of(
                 StompCommand.CONNECT,
                 StompCommand.SUBSCRIBE,

@@ -1,7 +1,6 @@
 package com.app.messenger.websocket.controller.dto.notifications;
 
 import com.app.messenger.controller.dto.UserDto;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

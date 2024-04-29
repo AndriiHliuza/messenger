@@ -2,10 +2,7 @@ package com.app.messenger.websocket.repository;
 
 import com.app.messenger.websocket.repository.model.Chat;
 import com.app.messenger.websocket.repository.model.Message;
-import com.app.messenger.websocket.repository.model.Status;
-import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
@@ -28,9 +25,5 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
             WHERE m.chat.id = :chatId AND ms.user.id = :userId)
             """)
     List<Message> findAllMessagesByChatIdThatWereNotSentToUserWithProvidedId(UUID chatId, UUID userId);
-    List<Message> findAllByChatIdOrderBySendTime(UUID chatId);
-//    @Lock(LockModeType.PESSIMISTIC_WRITE)
-//    Message findTopByChatIdOrderByChatMessageNumberDesc(UUID chatId);
-//    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    void deleteById(@NonNull UUID id);
+    List<Message> findAllByChatIdOrderBySendTime(UUID chatId);;
 }

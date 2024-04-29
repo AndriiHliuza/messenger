@@ -4,12 +4,10 @@ import com.app.messenger.controller.dto.Subscription;
 import com.app.messenger.controller.dto.UserDto;
 import com.app.messenger.controller.dto.UserModificationRequest;
 import com.app.messenger.exception.SubscriptionSubscriberAlreadyExistsException;
-import com.app.messenger.exception.SubscriptionSubscriberNotExists;
+import com.app.messenger.exception.SubscriptionSubscriberNotExistsException;
 import com.app.messenger.exception.UserNotFoundException;
-import com.app.messenger.repository.JwtRepository;
 import com.app.messenger.repository.SubscriptionSubscriberRepository;
 import com.app.messenger.repository.UserRepository;
-import com.app.messenger.repository.model.Jwt;
 import com.app.messenger.repository.model.Role;
 import com.app.messenger.repository.model.SubscriptionSubscriber;
 import com.app.messenger.repository.model.User;
@@ -17,8 +15,6 @@ import com.app.messenger.security.exception.PasswordNotValidException;
 import com.app.messenger.security.exception.UserDeletionException;
 import com.app.messenger.security.exception.UserNotAuthenticatedException;
 import com.app.messenger.security.service.AuthenticationService;
-import com.app.messenger.websocket.repository.ChatMemberRepository;
-import com.app.messenger.websocket.repository.model.ChatMember;
 import com.app.messenger.websocket.service.MessageService;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -208,7 +204,7 @@ public class UserServiceImpl implements UserService {
         );
 
         if (storedSubscriptionSubscriber == null) {
-            throw new SubscriptionSubscriberNotExists("User with uniqueName " + userUniqueName + "is not subscribed on user with uniqueName " + userSubscriptionUniqueName);
+            throw new SubscriptionSubscriberNotExistsException("User with uniqueName " + userUniqueName + "is not subscribed on user with uniqueName " + userSubscriptionUniqueName);
         } else {
             subscriptionSubscriberRepository.delete(storedSubscriptionSubscriber);
         }

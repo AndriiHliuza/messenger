@@ -14,8 +14,6 @@ import java.util.UUID;
 public interface MessageStatusRepository extends JpaRepository<MessageStatus, UUID> {
     Optional<MessageStatus> findByMessageIdAndUserId(UUID messageId, UUID userId);
 
-    List<MessageStatus> findAllByMessageId(UUID messageId);
-
     @Query("""
             SELECT ms FROM MessageStatus ms
             JOIN Message m ON m.id = ms.message.id
@@ -29,13 +27,4 @@ public interface MessageStatusRepository extends JpaRepository<MessageStatus, UU
             WHERE m.chat.id = :chatId AND ms.status = :status
             """)
     List<MessageStatus> findAllByChatIdAndStatus(UUID chatId, Status status);
-
-//    @Query("""
-//        SELECT m FROM Message m
-//        JOIN MessageStatus ms ON m.id = ms.message.id
-//        WHERE m.chat.id = :chatId
-//        AND ms.status = :status
-//        AND ((ms.userType = "SENDER" AND ms.user.id != :userId) OR (ms.userType = "RECEIVER" AND ms.user.id = :userId))
-//        """)
-//    List<MessageStatus> findAllMessagesStatusesForMessagesSendersNotEqualToProvidedUserIdAndForUser()
 }

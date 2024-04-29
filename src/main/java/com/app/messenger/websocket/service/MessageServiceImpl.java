@@ -259,7 +259,6 @@ public class MessageServiceImpl implements MessageService {
         }
         messageStatusRepository.saveAll(unreadMessageStatusesForUserInChat);
 
-//        List<Message> messages = messageRepository.findAllByChat(chat);
         List<Message> messagesWithNoStatusForUser = messageRepository.findAllMessagesByChatIdThatWereNotSentToUserWithProvidedId(
                 chat.getId(),
                 user.getId()

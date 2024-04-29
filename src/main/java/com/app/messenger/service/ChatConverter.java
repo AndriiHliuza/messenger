@@ -48,7 +48,6 @@ public class ChatConverter implements Converter<ChatDto, Chat> {
             );
         }
 
-//        List<Message> chatMessages = messageRepository.findAllByChatIdOrderByChatMessageNumber(chatId);
         List<Message> chatMessages = messageRepository.findAllByChatIdOrderBySendTime(chatId);
         for (Message message : chatMessages) {
             convertedChatMessages.add(messageConverter.toDto(message));

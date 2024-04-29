@@ -1,7 +1,7 @@
 package com.app.messenger.handler;
 
 import com.app.messenger.exception.SubscriptionSubscriberAlreadyExistsException;
-import com.app.messenger.exception.SubscriptionSubscriberNotExists;
+import com.app.messenger.exception.SubscriptionSubscriberNotExistsException;
 import com.app.messenger.exception.UserNotFoundException;
 import com.app.messenger.handler.dto.ExceptionResponse;
 import org.springframework.http.HttpStatus;
@@ -25,10 +25,10 @@ public class UserExceptionHandler {
 
     @ExceptionHandler(value = {
             SubscriptionSubscriberAlreadyExistsException.class,
-            SubscriptionSubscriberNotExists.class
+            SubscriptionSubscriberNotExistsException.class
     })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ExceptionResponse handleSubscriptionSubscriberAlreadyExistsException(Exception ex) {
+    public ExceptionResponse handleSubscriptionSubscriberExceptions(Exception ex) {
         return ExceptionResponse
                 .builder()
                 .message(ex.getMessage())
