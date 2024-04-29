@@ -7,11 +7,9 @@ import com.app.messenger.repository.model.User;
 import com.app.messenger.security.service.AuthenticationService;
 import com.app.messenger.service.ChatConverter;
 import com.app.messenger.service.ChatMemberConverter;
-import com.app.messenger.service.UserConverter;
 import com.app.messenger.websocket.controller.dto.ChatDto;
 import com.app.messenger.websocket.controller.dto.ChatMemberDto;
 import com.app.messenger.websocket.controller.dto.MessageDto;
-import com.app.messenger.websocket.controller.dto.notifications.ChatNotificationDto;
 import com.app.messenger.websocket.exception.ChatMemberAlreadyExistsException;
 import com.app.messenger.websocket.exception.ChatMemberNotFoundException;
 import com.app.messenger.websocket.exception.ChatModificationException;
@@ -22,7 +20,6 @@ import com.app.messenger.websocket.repository.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -35,7 +32,6 @@ public class ChatServiceImpl implements ChatService {
     private final AuthenticationService authenticationService;
     private final NotificationService notificationService;
     private final MessageService messageService;
-    private final UserConverter userConverter;
     private final UserRepository userRepository;
     private final ChatRepository chatRepository;
     private final ChatMemberRepository chatMemberRepository;
@@ -128,18 +124,7 @@ public class ChatServiceImpl implements ChatService {
         chat.setName(newChatName);
         Chat savedChat = chatRepository.save(chat);
         ChatDto chatDtoToReturn = chatConverter.toDto(savedChat);
-
-        UserDto currentUserDto = userConverter.toDto(currentUser);
-
-        messageService.processAndSendMessageToChat(MessageDto
-                .builder()
-                .sender(currentUserDto)
-                .chatId(chatDto.getId())
-                .content(MessageType.MODIFIED_CHAT.name())
-                .sendTime(ZonedDateTime.now().toString())
-                .type(MessageType.MODIFIED_CHAT)
-                .status(Status.UNREAD_MESSAGE)
-                .build());
+        messageService.sendMessageToChatOnChatUpdate(chatDtoToReturn);
 
         return chatDtoToReturn;
     }
@@ -167,60 +152,7 @@ public class ChatServiceImpl implements ChatService {
 
         ChatDto chatDtoToReturn = chatConverter.toDto(chat);
         chatRepository.deleteById(chat.getId());
-
-        List<UserDto> membersToNotify = chatDtoToReturn
-                .getMembers()
-                .stream()
-                .map(ChatMemberDto::getUser)
-                .toList();
-        UserDto currentUserDto = userConverter.toDto(currentUser);
-
-        switch (chat.getType()) {
-            case PRIVATE_CHAT -> {
-                UserDto anotherUserInPrivateChat = membersToNotify
-                        .stream()
-                        .filter(userDto -> !userDto.getUsername().equals(currentUserDto.getUsername()))
-                        .findFirst()
-                        .orElseThrow(
-                                () -> new UserNotFoundException("Second user not found in private chat")
-                        );
-
-                notificationService.processAndSendNotificationToUser(new ChatNotificationDto(
-                        currentUserDto.getUsername(),
-                        NotificationType.DELETED_GROUP_CHAT_NOTIFICATION.name(),
-                        ZonedDateTime.now().toString(),
-                        NotificationType.DELETED_GROUP_CHAT_NOTIFICATION.name(),
-                        chatDtoToReturn.getId(),
-                        chatDtoToReturn.getName(),
-                        chatDtoToReturn.getType())
-                );
-
-                notificationService.processAndSendNotificationToUser(new ChatNotificationDto(
-                        anotherUserInPrivateChat.getUsername(),
-                        NotificationType.DELETED_PRIVATE_CHAT_NOTIFICATION.name(),
-                        ZonedDateTime.now().toString(),
-                        NotificationType.DELETED_PRIVATE_CHAT_NOTIFICATION.name(),
-                        chatDtoToReturn.getId(),
-                        currentUserDto.getUniqueName(),
-                        chatDtoToReturn.getType())
-                );
-            }
-            case GROUP_CHAT -> {
-                notificationService.processAndSendNotificationToUsers(
-                        new ChatNotificationDto(
-                                null,
-                                chatDtoToReturn.getName(),
-                                ZonedDateTime.now().toString(),
-                                NotificationType.DELETED_GROUP_CHAT_NOTIFICATION.name(),
-                                chatDtoToReturn.getId(),
-                                chatDtoToReturn.getName(),
-                                chatDtoToReturn.getType()
-                        ),
-                        membersToNotify
-                );
-            }
-        }
-
+        notificationService.notifyUsersOnChatDeletion(chatDtoToReturn);
         return chatDtoToReturn;
     }
 
@@ -247,26 +179,7 @@ public class ChatServiceImpl implements ChatService {
         Chat chat = chatConverter.toEntity(chatDto);
         Chat savedChat = chatRepository.save(chat);
         ChatDto chatDtoToReturn = chatConverter.toDto(savedChat);
-
-        List<UserDto> membersToNotify = chatDtoToReturn
-                .getMembers()
-                .stream()
-                .map(ChatMemberDto::getUser)
-                .toList();
-
-        notificationService.processAndSendNotificationToUsers(
-                new ChatNotificationDto(
-                        null,
-                        chatDtoToReturn.getName(),
-                        ZonedDateTime.now().toString(),
-                        NotificationType.NEW_CHAT_NOTIFICATION.name(),
-                        chatDtoToReturn.getId(),
-                        chatDtoToReturn.getName(),
-                        chatDtoToReturn.getType()
-                ),
-                membersToNotify
-        );
-
+        notificationService.notifyUsersOnChatCreation(chatDtoToReturn);
         return chatDtoToReturn;
     }
 
@@ -284,7 +197,7 @@ public class ChatServiceImpl implements ChatService {
                 );
 
         if (chat.getType().equals(ChatType.PRIVATE_CHAT)) {
-
+            throw new IllegalArgumentException("User can not be added to private chat");
         }
 
         User userToAdd = userRepository
@@ -315,25 +228,11 @@ public class ChatServiceImpl implements ChatService {
 
         ChatMemberDto chatMemberToReturn = chatMemberConverter.toDto(savedChatMember);
 
-        messageService.processAndSendMessageToChat(MessageDto
-                .builder()
-                .sender(chatMemberToReturn.getUser())
-                .chatId(chatMemberToReturn.getChatId())
-                .content(MessageType.CHAT_MEMBER_ADDED_TO_CHAT.name())
-                .sendTime(ZonedDateTime.now().toString())
-                .type(MessageType.CHAT_MEMBER_ADDED_TO_CHAT)
-                .status(Status.UNREAD_MESSAGE)
-                .build()
-        );
-
-        notificationService.processAndSendNotificationToUser(new ChatNotificationDto(
-                chatMemberToReturn.getUser().getUsername(),
-                chat.getName(),
-                ZonedDateTime.now().toString(),
-                NotificationType.NEW_CHAT_NOTIFICATION.name(),
-                chat.getId().toString(),
-                chat.getName(),
-                chat.getType().name())
+        messageService.sendMessageToChatOnActionOnUserInChat(chatMemberToReturn, MessageType.CHAT_MEMBER_ADDED_TO_CHAT);
+        notificationService.notifyChatMemberOnActionOnChatMemberInChat(
+                chatConverter.toDto(chat),
+                chatMemberToReturn,
+                NotificationType.USER_ADDED_TO_CHAT_NOTIFICATION
         );
 
         return chatMemberToReturn;
@@ -373,27 +272,11 @@ public class ChatServiceImpl implements ChatService {
 
         ChatMemberDto chatMemberDtoToReturn = chatMemberConverter.toDto(savedChatMember);
 
-        User currentUser = authenticationService.getCurrentUser();
-        UserDto currentUserDto = userConverter.toDto(currentUser);
-
-        messageService.processAndSendMessageToChat(MessageDto
-                .builder()
-                .sender(currentUserDto)
-                .chatId(chatId)
-                .content(MessageType.NEW_STATUS_IN_CHAT_MEMBER.name())
-                .sendTime(ZonedDateTime.now().toString())
-                .type(MessageType.NEW_STATUS_IN_CHAT_MEMBER)
-                .status(Status.UNREAD_MESSAGE)
-                .build());
-
-        notificationService.processAndSendNotificationToUser(new ChatNotificationDto(
-                chatMemberDtoToReturn.getUser().getUsername(),
-                chat.getName(),
-                ZonedDateTime.now().toString(),
-                NotificationType.NEW_ADMIN_IN_CHAT_NOTIFICATION.name(),
-                chat.getId().toString(),
-                chat.getName(),
-                chat.getType().name())
+        messageService.sendMessageToChatOnActionOnUserInChat(chatMemberDtoToReturn, MessageType.NEW_STATUS_IN_CHAT_MEMBER);
+        notificationService.notifyChatMemberOnActionOnChatMemberInChat(
+                chatConverter.toDto(chat),
+                chatMemberDtoToReturn,
+                NotificationType.NEW_ADMIN_IN_CHAT_NOTIFICATION
         );
 
         return chatMemberDtoToReturn;
@@ -435,9 +318,10 @@ public class ChatServiceImpl implements ChatService {
         chatMemberRepository.delete(chatMemberToDelete);
 
         ChatMemberDto chatMemberDtoToReturn = chatMemberConverter.toDto(chatMemberToDelete);
+
         NotificationType notificationType = NotificationType.DELETED_CHAT_MEMBER_NOTIFICATION;
         MessageType messageType = MessageType.CHAT_MEMBER_DELETED_FROM_CHAT;
-        UserDto currentUserDto = userConverter.toDto(currentUser);
+
         if (currentUser.getUsername().equals(chatMemberDtoToReturn.getUser().getUsername())) {
             notificationType = NotificationType.MEMBER_LEFT_CHAT_NOTIFICATION;
             messageType = MessageType.CHAT_MEMBER_LEFT_CHAT;
@@ -448,26 +332,14 @@ public class ChatServiceImpl implements ChatService {
             chatRepository.deleteById(convertedChatId);
         }
 
-        notificationService.processAndSendNotificationToUser(new ChatNotificationDto(
-                chatMemberDtoToReturn.getUser().getUsername(),
-                chat.getName(),
-                ZonedDateTime.now().toString(),
-                notificationType.name(),
-                chat.getId().toString(),
-                chat.getName(),
-                chat.getType().name())
+        notificationService.notifyChatMemberOnActionOnChatMemberInChat(
+                chatConverter.toDto(chat),
+                chatMemberDtoToReturn,
+                notificationType
         );
 
         if (!notificationType.equals(NotificationType.DELETED_GROUP_CHAT_NOTIFICATION)) {
-            messageService.processAndSendMessageToChat(MessageDto
-                    .builder()
-                    .sender(currentUserDto)
-                    .chatId(chatId)
-                    .content(messageType.name())
-                    .sendTime(ZonedDateTime.now().toString())
-                    .type(messageType)
-                    .status(Status.UNREAD_MESSAGE)
-                    .build());
+            messageService.sendMessageToChatOnActionOnUserInChat(chatMemberDtoToReturn, messageType);
         }
 
         return chatMemberDtoToReturn;
@@ -490,4 +362,5 @@ public class ChatServiceImpl implements ChatService {
                     chatDto.setMessages(messagesToReturn);
                 }).toList();
     }
+
 }

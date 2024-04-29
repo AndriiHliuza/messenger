@@ -72,6 +72,12 @@ public class UserController {
         );
     }
 
+    @DeleteMapping("/users/{username}")
+    @PreAuthorize("hasAuthority('DELETE_USER')")
+    public UserDto deleteUser(@PathVariable String username) throws Exception {
+        return userService.deleteUser(username);
+    }
+
     @GetMapping("/users/{uniqueName}/image")
     @PreAuthorize("hasAuthority('READ_USER')")
     public ResponseEntity<byte[]> getUserImage(@PathVariable String uniqueName) throws Exception {

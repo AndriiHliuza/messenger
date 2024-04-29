@@ -14,6 +14,8 @@ import java.util.UUID;
 public interface MessageStatusRepository extends JpaRepository<MessageStatus, UUID> {
     Optional<MessageStatus> findByMessageIdAndUserId(UUID messageId, UUID userId);
 
+    List<MessageStatus> findAllByMessageId(UUID messageId);
+
     @Query("""
             SELECT ms FROM MessageStatus ms
             JOIN Message m ON m.id = ms.message.id

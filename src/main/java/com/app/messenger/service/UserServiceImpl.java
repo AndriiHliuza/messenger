@@ -6,14 +6,20 @@ import com.app.messenger.controller.dto.UserModificationRequest;
 import com.app.messenger.exception.SubscriptionSubscriberAlreadyExistsException;
 import com.app.messenger.exception.SubscriptionSubscriberNotExists;
 import com.app.messenger.exception.UserNotFoundException;
+import com.app.messenger.repository.JwtRepository;
 import com.app.messenger.repository.SubscriptionSubscriberRepository;
 import com.app.messenger.repository.UserRepository;
+import com.app.messenger.repository.model.Jwt;
 import com.app.messenger.repository.model.Role;
 import com.app.messenger.repository.model.SubscriptionSubscriber;
 import com.app.messenger.repository.model.User;
 import com.app.messenger.security.exception.PasswordNotValidException;
+import com.app.messenger.security.exception.UserDeletionException;
 import com.app.messenger.security.exception.UserNotAuthenticatedException;
 import com.app.messenger.security.service.AuthenticationService;
+import com.app.messenger.websocket.repository.ChatMemberRepository;
+import com.app.messenger.websocket.repository.model.ChatMember;
+import com.app.messenger.websocket.service.MessageService;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -43,6 +49,8 @@ public class UserServiceImpl implements UserService {
 
     private final AuthenticationService authenticationService;
     private final PasswordEncoder passwordEncoder;
+
+    private final MessageService messageService;
 
     @Override
     public UserDto getUserByUsername(Role role, String username) throws Exception {
@@ -111,6 +119,30 @@ public class UserServiceImpl implements UserService {
         user = userModifier.modify(userModificationRequest, user);
         user = userRepository.save(user);
         return userConverter.toDto(user);
+    }
+
+    @Override
+    public UserDto deleteUser(String username) throws Exception {
+        User userToDelete = userRepository
+                .findByUsername(username)
+                .orElseThrow(
+                        () -> new UserNotFoundException("User with username " + username + " not found")
+                );
+
+        User currentUser = authenticationService.getCurrentUser();
+        if (!userToDelete.getUsername().equals(currentUser.getUsername())
+                || currentUser.getRole().equals(Role.ADMIN)
+                || currentUser.getRole().equals(Role.ROOT)) {
+            throw new UserDeletionException("User with username " + currentUser.getUsername()
+                    + " has no rights to delete user with username " + username);
+        }
+
+
+        UserDto userToDeleteDto = userConverter.toDto(userToDelete);
+        messageService.sendMessageToChatOnUserDeletion(userToDeleteDto);
+        userRepository.delete(userToDelete);
+
+        return userToDeleteDto;
     }
 
     private Page<User> getUsersPagedAndSortedForCurrentUser(Pageable pageable) throws UserNotAuthenticatedException {

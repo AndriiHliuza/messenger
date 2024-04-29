@@ -122,7 +122,7 @@ public class ChatConverter implements Converter<ChatDto, Chat> {
                             .equals(currentUser.getUsername()))
                     .findFirst()
                     .map(chatMemberDto -> chatMemberDto.getUser().getUniqueName())
-                    .orElseThrow();
+                    .orElse(null);
         };
         chatDto.setName(chatName);
         return chatDto;

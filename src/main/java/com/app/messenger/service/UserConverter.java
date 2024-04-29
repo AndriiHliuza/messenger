@@ -18,26 +18,30 @@ public class UserConverter implements Converter<UserDto, User> {
     private final DateTimeFormatter dateTimeFormatter;
     @Override
     public UserDto toDto(User user) throws Exception {
-        UserImage userImage = user.getUserImage();
-        UserImageDto userImageDto = userImageConverter.toDto(userImage);
-        String birthdayToReturn = null;
+        UserDto userDto = null;
+        if (user != null) {
+            UserImage userImage = user.getUserImage();
+            UserImageDto userImageDto = userImageConverter.toDto(userImage);
+            String birthdayToReturn = null;
 
-        LocalDate birthday = user.getBirthday();
-        if (birthday != null) {
-            birthdayToReturn = birthday.format(dateTimeFormatter);
+            LocalDate birthday = user.getBirthday();
+            if (birthday != null) {
+                birthdayToReturn = birthday.format(dateTimeFormatter);
+            }
+            userDto = UserDto
+                    .builder()
+                    .username(user.getUsername())
+                    .uniqueName(user.getUniqueName())
+                    .registrationDate(user.getRegistrationDate().toString())
+                    .firstname(user.getFirstname())
+                    .lastname(user.getLastname())
+                    .birthday(birthdayToReturn)
+                    .role(user.getRole())
+                    .userImage(userImageDto)
+                    .build();
         }
 
-        return UserDto
-                .builder()
-                .username(user.getUsername())
-                .uniqueName(user.getUniqueName())
-                .registrationDate(user.getRegistrationDate().toString())
-                .firstname(user.getFirstname())
-                .lastname(user.getLastname())
-                .birthday(birthdayToReturn)
-                .role(user.getRole())
-                .userImage(userImageDto)
-                .build();
+        return userDto;
     }
 
     @Override

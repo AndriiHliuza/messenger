@@ -61,10 +61,10 @@ public class MessageController {
 
     @DeleteMapping("/chats/{chatId}/messages/{messageId}")
     @PreAuthorize("hasRole('USER')")
-    public MessageDto deleteMessageInChat(
+    public MessageDto deleteMessageFromChat(
             @PathVariable String chatId,
             @PathVariable String messageId
     ) throws Exception {
-        return messageService.deleteMessageInChat(chatId, messageId);
+        return messageService.deleteMessageFromChat(chatId, messageId);
     }
 }

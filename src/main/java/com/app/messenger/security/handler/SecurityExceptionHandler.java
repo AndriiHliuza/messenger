@@ -54,6 +54,17 @@ public class SecurityExceptionHandler {
     }
 
     @ExceptionHandler(value = {
+            UserDeletionException.class
+    })
+    @ResponseStatus(value = HttpStatus.FORBIDDEN)
+    public ExceptionResponse handleUserDeletionException() {
+        return ExceptionResponse
+                .builder()
+                .message("Forbidden operation")
+                .build();
+    }
+
+    @ExceptionHandler(value = {
             IllegalBlockSizeException.class,
             BadPaddingException.class,
             InvalidKeyException.class

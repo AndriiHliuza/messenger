@@ -22,6 +22,7 @@ public interface UserService {
             LocalDate birthday,
             MultipartFile userImage
     ) throws Exception;
+    UserDto deleteUser(String username) throws Exception;
     Subscription subscribe(String subscriberUniqueName, Subscription subscription) throws Exception;
     Subscription isSubscribed(String userUniqueName, String userSubscriptionUniqueName) throws Exception;
     Subscription unsubscribe(String userUniqueName, String userSubscriptionUniqueName) throws Exception;

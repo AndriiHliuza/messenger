@@ -1,5 +1,6 @@
 package com.app.messenger.websocket.service;
 
+import com.app.messenger.controller.dto.UserDto;
 import com.app.messenger.exception.UserNotFoundException;
 import com.app.messenger.repository.UserRepository;
 import com.app.messenger.repository.model.User;
@@ -8,6 +9,9 @@ import com.app.messenger.security.service.AuthenticationService;
 import com.app.messenger.security.service.E2EEService;
 import com.app.messenger.security.service.EncryptionService;
 import com.app.messenger.service.MessageConverter;
+import com.app.messenger.service.UserConverter;
+import com.app.messenger.websocket.controller.dto.ChatDto;
+import com.app.messenger.websocket.controller.dto.ChatMemberDto;
 import com.app.messenger.websocket.controller.dto.ChatMessagesStatusUpdateDto;
 import com.app.messenger.websocket.controller.dto.MessageDto;
 import com.app.messenger.websocket.exception.ChatMemberNotFoundException;
@@ -23,6 +27,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @Service
@@ -30,6 +35,7 @@ import java.util.*;
 public class MessageServiceImpl implements MessageService {
 
     private final UserRepository userRepository;
+    private final UserConverter userConverter;
     private final MessageRepository messageRepository;
     private final MessageStatusRepository messageStatusRepository;
     private final MessageConverter messageConverter;
@@ -147,7 +153,7 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
 //    @Transactional
-    public MessageDto deleteMessageInChat(String chatId, String messageId) throws Exception {
+    public MessageDto deleteMessageFromChat(String chatId, String messageId) throws Exception {
         MessageDto messageDtoToReturn = null;
 
         UUID convertedChatId = UUID.fromString(chatId);
@@ -173,7 +179,7 @@ public class MessageServiceImpl implements MessageService {
                                 + " not found in chat with id " + chatId)
                 );
 
-        if (currentUser.getId().equals(messageSender.getId()) || chatMember.getMemberRole().equals(MemberRole.ADMIN)) {
+        if (chatMember.getMemberRole().equals(MemberRole.ADMIN) || currentUser.getId().equals(messageSender.getId())) {
             messageDtoToReturn = messageConverter.toDto(message);
             String encryptedText = e2eeService.encrypt(messageDtoToReturn.getContent());
             messageDtoToReturn.setContent(encryptedText);
@@ -352,5 +358,50 @@ public class MessageServiceImpl implements MessageService {
                 );
 
         return messageConverter.toDto(messageStatus.getMessage());
+    }
+
+    @Override
+    public void sendMessageToChatOnChatUpdate(ChatDto updatedChat) throws Exception {
+        User currentUser = authenticationService.getCurrentUser();
+        UserDto currentUserDto = userConverter.toDto(currentUser);
+        processAndSendMessageToChat(MessageDto
+                .builder()
+                .sender(currentUserDto)
+                .chatId(updatedChat.getId())
+                .content(MessageType.MODIFIED_CHAT.name())
+                .sendTime(ZonedDateTime.now().toString())
+                .type(MessageType.MODIFIED_CHAT)
+                .status(Status.UNREAD_MESSAGE)
+                .build());
+    }
+
+    @Override
+    public void sendMessageToChatOnActionOnUserInChat(ChatMemberDto user, MessageType messageType) throws Exception {
+        User currentUser = authenticationService.getCurrentUser();
+        UserDto currentUserDto = userConverter.toDto(currentUser);
+        processAndSendMessageToChat(MessageDto
+                .builder()
+                .sender(currentUserDto)
+                .chatId(user.getChatId())
+                .content(messageType.name())
+                .sendTime(ZonedDateTime.now().toString())
+                .type(messageType)
+                .status(Status.UNREAD_MESSAGE)
+                .build());
+    }
+
+    @Override
+    public void sendMessageToChatOnUserDeletion(UserDto userDto) {
+        List<Chat> userChats = chatRepository.findAllChatsByChatMemberUsername(userDto.getUsername());
+        userChats.forEach(chat -> processAndSendMessageToChat(MessageDto
+                .builder()
+                .sender(userDto)
+                .chatId(chat.getId().toString())
+                .content(MessageType.CHAT_MEMBER_LEFT_CHAT.name())
+                .sendTime(ZonedDateTime.now().toString())
+                .type(MessageType.CHAT_MEMBER_LEFT_CHAT)
+                .status(Status.UNREAD_MESSAGE)
+                .build()));
+
     }
 }
