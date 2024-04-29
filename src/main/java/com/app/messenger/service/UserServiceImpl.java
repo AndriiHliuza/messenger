@@ -31,6 +31,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -139,6 +140,41 @@ public class UserServiceImpl implements UserService {
         userRepository.delete(userToDelete);
 
         return userToDeleteDto;
+    }
+
+    @Override
+    public List<UserDto> getUserSubscriptions(String username) throws Exception {
+        User user = userRepository
+                .findByUsername(username)
+                .orElseThrow(
+                        () -> new UserNotFoundException("User with username " + username + " not found")
+                );
+        List<SubscriptionSubscriber> subscriptionSubscribers = subscriptionSubscriberRepository.findBySubscriberId(user.getId());
+        return convertUserStreamToUserDtoList(subscriptionSubscribers
+                .stream()
+                .map(SubscriptionSubscriber::getSubscription));
+    }
+
+    @Override
+    public List<UserDto> getUserSubscribers(String username) throws Exception {
+        User user = userRepository
+                .findByUsername(username)
+                .orElseThrow(
+                        () -> new UserNotFoundException("User with username " + username + " not found")
+                );
+        List<SubscriptionSubscriber> subscriptionSubscribers = subscriptionSubscriberRepository.findBySubscriptionId(user.getId());
+        return convertUserStreamToUserDtoList(subscriptionSubscribers
+                .stream()
+                .map(SubscriptionSubscriber::getSubscriber));
+    }
+
+    private List<UserDto> convertUserStreamToUserDtoList(Stream<User> userStream) throws Exception {
+        List<User> users = userStream.toList();
+        List<UserDto> usersToReturn = new ArrayList<>();
+        for (User user : users) {
+            usersToReturn.add(userConverter.toDto(user));
+        }
+        return usersToReturn;
     }
 
     private Page<User> getUsersPagedAndSortedForCurrentUser(Pageable pageable) throws UserNotAuthenticatedException {

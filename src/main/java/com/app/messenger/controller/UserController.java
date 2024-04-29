@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -92,6 +93,18 @@ public class UserController {
     @PreAuthorize("hasAuthority('READ_USER')")
     public UserImageDto getUserImageMetadata(@PathVariable String uniqueName) throws Exception {
         return userImageService.getUserImage(uniqueName);
+    }
+
+    @GetMapping("/users/{username}/subscriptions")
+    @PreAuthorize("hasRole('USER')")
+    public List<UserDto> getUserSubscriptions(@PathVariable String username) throws Exception {
+        return userService.getUserSubscriptions(username);
+    }
+
+    @GetMapping("/users/{username}/subscribers")
+    @PreAuthorize("hasRole('USER')")
+    public List<UserDto> getUserSubscribers(@PathVariable String username) throws Exception {
+        return userService.getUserSubscribers(username);
     }
 
     @PostMapping("/users/{authenticatedUserUniqueName}/subscriptions")
