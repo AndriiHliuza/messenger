@@ -26,7 +26,8 @@ public enum Role {
 
                     Permission.READ_ADMIN,
                     Permission.CREATE_ADMIN,
-                    Permission.UPDATE_ADMIN
+                    Permission.UPDATE_ADMIN,
+                    Permission.DELETE_ADMIN
             )
     ),
     ROOT(

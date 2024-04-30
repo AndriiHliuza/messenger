@@ -11,7 +11,10 @@ import com.app.messenger.repository.UserRepository;
 import com.app.messenger.repository.model.Role;
 import com.app.messenger.repository.model.SubscriptionSubscriber;
 import com.app.messenger.repository.model.User;
+import com.app.messenger.security.controller.dto.RegistrationRequest;
+import com.app.messenger.security.controller.dto.RegistrationResponse;
 import com.app.messenger.security.exception.PasswordNotValidException;
+import com.app.messenger.security.exception.UserAlreadyExistsException;
 import com.app.messenger.security.exception.UserDeletionException;
 import com.app.messenger.security.exception.UserNotAuthenticatedException;
 import com.app.messenger.security.service.AuthenticationService;
@@ -40,6 +43,7 @@ public class UserServiceImpl implements UserService {
     private final SubscriptionSubscriberRepository subscriptionSubscriberRepository;
 
     private final UserConverter userConverter;
+    private final UserRegistrationConverter userRegistrationConverter;
     private final SubscriptionSubscriberConverter subscriptionSubscriberConverter;
 
     private final UserModifier userModifier;
@@ -70,11 +74,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Collection<UserDto> getUsersPagedAndSorted(int page, int size, String order) throws Exception {
+    public Collection<UserDto> getUsersPagedAndSorted(int page, int size, String order, Role userRole) throws Exception {
         Sort.Direction sortOrder = Sort.Direction.valueOf(order.toUpperCase());
         Sort sort = Sort.by(sortOrder, "uniqueName");
         Pageable pageable = PageRequest.of(page, size, sort);
-        Collection<User> users = getUsersPagedAndSortedForCurrentUser(pageable).getContent();
+        Collection<User> users = getUsersPagedAndSortedForCurrentUser(pageable, userRole).getContent();
         List<UserDto> usersToReturn = new ArrayList<>();
         for (User user : users) {
             usersToReturn.add(userConverter.toDto(user));
@@ -126,14 +130,7 @@ public class UserServiceImpl implements UserService {
                         () -> new UserNotFoundException("User with username " + username + " not found")
                 );
 
-        User currentUser = authenticationService.getCurrentUser();
-        if (!userToDelete.getUsername().equals(currentUser.getUsername())
-                || currentUser.getRole().equals(Role.ADMIN)
-                || currentUser.getRole().equals(Role.ROOT)) {
-            throw new UserDeletionException("User with username " + currentUser.getUsername()
-                    + " has no rights to delete user with username " + username);
-        }
-
+        validateUserDeletion(userToDelete);
 
         UserDto userToDeleteDto = userConverter.toDto(userToDelete);
         messageService.sendMessageToChatOnUserDeletion(userToDeleteDto);
@@ -177,7 +174,7 @@ public class UserServiceImpl implements UserService {
         return usersToReturn;
     }
 
-    private Page<User> getUsersPagedAndSortedForCurrentUser(Pageable pageable) throws UserNotAuthenticatedException {
+    private Page<User> getUsersPagedAndSortedForCurrentUser(Pageable pageable, Role userRole) throws UserNotAuthenticatedException {
         UserDetails currentUser = authenticationService.getAuthenticatedUserUserDetailsFromSecurityContext();
         if (currentUser == null) {
             throw new UserNotAuthenticatedException("User not authenticated");
@@ -186,7 +183,7 @@ public class UserServiceImpl implements UserService {
 
         return userRepository.findAll((root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(criteriaBuilder.equal(root.get("role"), Role.USER));
+            predicates.add(criteriaBuilder.equal(root.get("role"), userRole));
             predicates.add(criteriaBuilder.notEqual(root.get("username"), usernameToExclude));
             return query.where(predicates.toArray(Predicate[]::new)).getRestriction();
         }, pageable);
@@ -249,9 +246,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Collection<UserDto> findUsersDifferentFromTheCurrentUserByTheirUniqueNameStartingWithPrefix(String prefix, int usersNumber) throws Exception {
+    public Collection<UserDto> findUsersDifferentFromTheCurrentUserByTheirUniqueNameStartingWithPrefix(String prefix, int usersNumber, Role role) throws Exception {
         User currentUser = authenticationService.getCurrentUser();
-        List<User> users = userRepository.findAllByUniqueNameStartingWithAndRole(prefix, Role.USER);
+        List<User> users = userRepository.findAllByUniqueNameStartingWithAndRole(prefix, role);
         List<UserDto> usersToReturn = new ArrayList<>();
 
         int numberUsersToReturn = Math.min(users.size(), usersNumber);
@@ -264,5 +261,44 @@ public class UserServiceImpl implements UserService {
         }
 
         return usersToReturn;
+    }
+
+    @Override
+    public RegistrationResponse createAdmin(RegistrationRequest registrationRequest) throws Exception {
+        if (userRepository.existsByUsername(registrationRequest.getUsername())) {
+            throw new UserAlreadyExistsException("User with username " + registrationRequest.getUsername() + " already exists in database");
+        } else if (userRepository.existsByUniqueName(registrationRequest.getUniqueName())) {
+            throw new UserAlreadyExistsException("User with uniqueName " + registrationRequest.getUniqueName() + " already exists in database");
+        }
+
+        User userToSave = userRegistrationConverter.toEntity(registrationRequest);
+        userToSave.setRole(Role.ADMIN);
+        User savedUser = userRepository.save(userToSave);
+
+        UserDto registeredUserDto = userConverter.toDto(savedUser);
+
+        return RegistrationResponse
+                .builder()
+                .user(registeredUserDto)
+                .isRegistrationSuccessful(true)
+                .build();
+    }
+
+    private void validateUserDeletion(User userToDelete) throws Exception {
+        User currentUser = authenticationService.getCurrentUser();
+
+        Role currentUserRole = currentUser.getRole();
+        Role userToDeleteRole = userToDelete.getRole();
+
+        if (userToDeleteRole.equals(Role.ROOT)) {
+            throw new UserDeletionException("ROOT user can not be deleted");
+        }
+
+        if (!userToDelete.getUsername().equals(currentUser.getUsername())
+                && !((currentUserRole.equals(Role.ADMIN) || currentUserRole.equals(Role.ROOT)) && userToDeleteRole.equals(Role.USER))
+                && !(currentUserRole.equals(Role.ROOT) && userToDeleteRole.equals(Role.ADMIN))) {
+            throw new UserDeletionException("User with username " + currentUser.getUsername()
+                    + " has no rights to delete user with username " + userToDelete.getUsername());
+        }
     }
 }

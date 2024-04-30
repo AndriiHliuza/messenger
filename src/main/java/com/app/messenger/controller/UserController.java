@@ -46,11 +46,11 @@ public class UserController {
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "ASC") String order
     ) throws Exception {
-        return userService.getUsersPagedAndSorted(page, size, order);
+        return userService.getUsersPagedAndSorted(page, size, order, Role.USER);
     }
 
     @PatchMapping("/users/{username}")
-    @PreAuthorize("hasAuthority('UPDATE_USER')")
+    @PreAuthorize("hasAnyAuthority('UPDATE_USER', 'UPDATE_ADMIN', 'UPDATE_ROOT')")
     public UserDto updateUser(
             @PathVariable String username,
             @RequestParam String currentPassword,
@@ -96,13 +96,13 @@ public class UserController {
     }
 
     @GetMapping("/users/{username}/subscriptions")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAuthority('READ_USER')")
     public List<UserDto> getUserSubscriptions(@PathVariable String username) throws Exception {
         return userService.getUserSubscriptions(username);
     }
 
     @GetMapping("/users/{username}/subscribers")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAuthority('READ_USER')")
     public List<UserDto> getUserSubscribers(@PathVariable String username) throws Exception {
         return userService.getUserSubscribers(username);
     }
@@ -140,6 +140,6 @@ public class UserController {
             @RequestParam String prefix,
             @RequestParam(defaultValue = "5") int usersNumber
     ) throws Exception {
-        return userService.findUsersDifferentFromTheCurrentUserByTheirUniqueNameStartingWithPrefix(prefix, usersNumber);
+        return userService.findUsersDifferentFromTheCurrentUserByTheirUniqueNameStartingWithPrefix(prefix, usersNumber, Role.USER);
     }
 }
