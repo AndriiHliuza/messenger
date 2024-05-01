@@ -19,6 +19,7 @@ import com.app.messenger.websocket.repository.ChatRepository;
 import com.app.messenger.websocket.repository.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -206,7 +207,7 @@ public class ChatServiceImpl implements ChatService {
                         () -> new UserNotFoundException("User with username " + username + " not found")
                 );
 
-        if (chatMemberRepository.existsByMemberId(userToAdd.getId())) {
+        if (chatMemberRepository.existsByMemberIdAndChatId(userToAdd.getId(), chat.getId())) {
             throw new ChatMemberAlreadyExistsException("Chat member with username "
                     + userToAdd.getUsername() + " already exists in chat with id " + chatId);
         }

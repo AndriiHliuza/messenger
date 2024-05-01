@@ -6,6 +6,7 @@ import com.app.messenger.repository.UserImageRepository;
 import com.app.messenger.repository.UserRepository;
 import com.app.messenger.repository.model.User;
 import com.app.messenger.repository.model.UserImage;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,7 @@ public class UserModifier implements Modifier<UserModificationRequest, User> {
     private final UserImageConverter userImageConverter;
 
     @Override
-    public User modify(UserModificationRequest userModificationRequest, User user) throws Exception {
+    public User modify(@Valid UserModificationRequest userModificationRequest, User user) throws Exception {
         if (isNewPasswordValid(userModificationRequest.getPassword(), user.getPassword())) {
             user.setPassword(passwordEncoder.encode(userModificationRequest.getPassword()));
         }

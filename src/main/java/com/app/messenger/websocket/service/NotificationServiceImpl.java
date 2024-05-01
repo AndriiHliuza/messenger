@@ -108,10 +108,13 @@ public class NotificationServiceImpl implements NotificationService {
                         currentUser.getUsername(),
                         anotherUserInPrivateChatUsername
                 ));
-                processAndSendNotificationToUser(chatNotificationDto.cloneAndSetReceiverUsernameAndChatName(
-                        anotherUserInPrivateChatUsername,
-                        currentUser.getUsername())
-                );
+
+                if (anotherUserInPrivateChatUsername != null) {
+                    processAndSendNotificationToUser(chatNotificationDto.cloneAndSetReceiverUsernameAndChatName(
+                            anotherUserInPrivateChatUsername,
+                            currentUser.getUsername())
+                    );
+                }
             }
             case GROUP_CHAT -> {
                 chatNotificationDto.setType(NotificationType.DELETED_GROUP_CHAT_NOTIFICATION.name());
@@ -185,11 +188,6 @@ public class NotificationServiceImpl implements NotificationService {
                     );
             String receiverUsername = notificationReceiver.getUsername();
 
-            String notificationContent = notificationDto.getContent();
-            if (notificationContent == null || notificationContent.isBlank()) {
-                throw new IllegalArgumentException("Notification content is missing");
-            }
-
             String time = ZonedDateTime.now().toString();
             NotificationType type = NotificationType.valueOf(notificationDto.getType().toUpperCase());
 
@@ -208,7 +206,7 @@ public class NotificationServiceImpl implements NotificationService {
                         .builder()
                         .senderUsername(senderUsername)
                         .receiverUsername(receiverUsername)
-                        .content(notificationContent)
+                        .content(notificationDto.getContent())
                         .time(time)
                         .type(type.name())
                         .build();

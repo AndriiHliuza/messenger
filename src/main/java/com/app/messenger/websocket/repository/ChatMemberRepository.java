@@ -1,5 +1,6 @@
 package com.app.messenger.websocket.repository;
 
+import com.app.messenger.repository.model.User;
 import com.app.messenger.websocket.repository.model.ChatMember;
 import com.app.messenger.websocket.repository.model.MemberRole;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +14,6 @@ import java.util.UUID;
 public interface ChatMemberRepository extends JpaRepository<ChatMember, UUID> {
     List<ChatMember> findAllByChatId(UUID chatId);
     Optional<ChatMember> findByChatIdAndMemberUsername(UUID chatId, String username);
-    boolean existsByMemberId(UUID memberId);
+    boolean existsByMemberIdAndChatId(UUID memberId, UUID chatId);
     boolean existsByMemberIdAndChatIdAndMemberRole(UUID memberId, UUID chatId, MemberRole memberRole);
 }

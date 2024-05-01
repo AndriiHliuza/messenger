@@ -1,5 +1,8 @@
 package com.app.messenger.controller.dto;
 
+import com.app.messenger.security.annotation.Password;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,12 +16,16 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserModificationRequest {
-    private String currentPassword;
 
+    @NotNull
+    @Password
+    private String currentPassword;
     private String password;
     private String uniqueName;
     private String firstname;
     private String lastname;
+
+    @Past
     private LocalDate birthday;
     private MultipartFile userImage;
 }
