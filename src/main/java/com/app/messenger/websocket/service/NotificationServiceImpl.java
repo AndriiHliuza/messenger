@@ -16,6 +16,7 @@ import com.app.messenger.websocket.repository.model.NotificationType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
@@ -34,6 +35,7 @@ public class NotificationServiceImpl implements NotificationService {
 
 
     @Override
+    @Async
     public void processAndSendNotificationToUser(NotificationDto notificationDto) {
         NotificationDto notificationDtoToBeSendToUser = processAndBuildNotificationDtoToBeSendToUser(notificationDto);
 
@@ -49,6 +51,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @Async
     public void processAndSendNotificationToUsers(NotificationDto notificationDto, Collection<UserDto> usersToNotify) {
         if (notificationDto != null) {
             for (UserDto userToNotify : usersToNotify) {
@@ -59,6 +62,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @Async
     public void processAndSendMultiUserNotification(MultiUserNotificationDto multiUserNotificationDto) {
         NotificationDto notificationDto = multiUserNotificationDto.getNotification();
         List<UserDto> usersToNotify = multiUserNotificationDto.getUsersToNotify();

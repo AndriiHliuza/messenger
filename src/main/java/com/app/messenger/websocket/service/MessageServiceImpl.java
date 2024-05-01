@@ -24,6 +24,7 @@ import com.app.messenger.websocket.repository.MessageStatusRepository;
 import com.app.messenger.websocket.repository.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -63,7 +64,6 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-//    @Transactional
     public MessageDto sendMessageToChat(MessageDto messageDto) throws Exception {
         if (!messageDto.getType().equals(MessageType.NEW_MESSAGE)) {
             throw new IllegalArgumentException("Invalid message type");
@@ -207,6 +207,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
+    @Async
     public void processAndSendMessageToChat(MessageDto messageDto) {
         String chatId = messageDto.getChatId();
         simpMessagingTemplate.convertAndSend(
@@ -279,7 +280,6 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-//    @Transactional
     public ChatMessagesStatusUpdateDto updateMessagesStatusesInChat(
             String chatId,
             ChatMessagesStatusUpdateDto chatMessagesStatusUpdateDto
@@ -390,6 +390,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
+    @Async
     public void sendMessageToChatOnUserDeletion(UserDto userDto) {
         List<Chat> userChats = chatRepository.findAllChatsByChatMemberUsername(userDto.getUsername());
         userChats.forEach(chat -> processAndSendMessageToChat(MessageDto
