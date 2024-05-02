@@ -50,8 +50,7 @@ public class SecurityConfig {
                                             HttpMethod.POST,
                                             "/api/registration",
                                             "/api/authentication",
-                                            "/api/jwt/**",
-                                            "/api/hello"
+                                            "/api/jwt/**"
                                     ).permitAll()
 
                                     .requestMatchers(
