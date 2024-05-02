@@ -152,7 +152,6 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-//    @Transactional
     public MessageDto deleteMessageFromChat(String chatId, String messageId) throws Exception {
         MessageDto messageDtoToReturn = null;
 

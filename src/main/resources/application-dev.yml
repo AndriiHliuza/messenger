@@ -1,0 +1,38 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    user: postgres
+    password: postgres
+
+logging:
+  level:
+    com:
+      app:
+        messenger:
+          security:
+            service: DEBUG
+
+application:
+  jwt:
+    secret-encryption-key: 753778214125442A472D4B6150645367566B59703373367639792F423F452848
+
+  security:
+    service:
+      encryption:
+        aes-key: e7b824fa21866572831e7a30aaa01957
+    root:
+      password: rootpassword
+    admin:
+      password: adminpassword
+
+  cors:
+    origins:
+      url: http://localhost:3000
