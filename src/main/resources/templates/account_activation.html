@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+            name="description"
+            content="Web page for account activation"
+    />
+    <title>Account Activation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        .account-activation-page-container {
+            background-color: antiquewhite;
+            padding: 20px;
+        }
+
+        .heading, .activation-link {
+            text-align: center;
+        }
+
+        .activation-code {
+            font-size: 30px;
+            text-align: center;
+        }
+
+        .activation-link a {
+            background-color: #007bff;
+            color: white;
+
+            padding: 10px;
+
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="account-activation-page-container">
+        <h1 class="heading">Account Activation</h1>
+        <p th:text="'Hello ' + ${username} + ','"></p>
+        <p>Thank you for signing up! Please use the following activation code to activate your account:</p>
+        <p class="activation-code" th:text="${activationCode}"></p>
+        <div class="activation-link">
+            <a th:href="${confirmationUrl}" target="_blank">Activate your account</a>
+        </div>
+        <p>WebTalk Team</p>
+    </div>
+</body>
+</html>

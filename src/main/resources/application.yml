@@ -3,14 +3,35 @@ spring:
     active: dev
   datasource:
     driver-class-name: org.postgresql.Driver
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: validate
   flyway:
     baseline-on-migrate: true
+    user: ${FLYWAY_USERNAME}
+    password: ${FLYWAY_PASSWORD}
+  mail:
+    host: ${EMAIL_HOST}
+    port: ${EMAIL_PORT}
+    username: ${EMAIL_USERNAME}
+    password: ${EMAIL_APP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          writetimeout: 20000
+          connectiontimeout: 20000
+          timeout: 20000
 
 application:
   jwt:
+    secret-encryption-key: ${JWT_SECRET_ENCRYPTION_KEY}
     access-token:
       expiration-date: 86400000 # 1 day
     refresh-token:
@@ -20,3 +41,12 @@ application:
     service:
       encryption:
         algorithm: AES
+        aes-key: ${ENCRYPTION_AES_KEY}
+    root:
+      password: ${MESSENGER_ROOT_PASSWORD}
+    admin:
+      password: ${MESSENGER_ADMIN_PASSWORD}
+
+  cors:
+    origins:
+      url: ${CORS_ORIGINS_URL}
