@@ -1,5 +1,6 @@
 package com.app.messenger.repository;
 
+import com.app.messenger.repository.model.AccountState;
 import com.app.messenger.repository.model.Role;
 import com.app.messenger.repository.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,7 +17,10 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     Optional<User> findByUniqueName(String uniqueName);
     Optional<User> findByRoleAndUsername(Role role, String username);
     Optional<User> findByRoleAndUniqueName(Role role, String uniqueName);
+    Optional<User> findByUsernameAndUserAccountState(String username, AccountState state);
     boolean existsByUsername(String username);
+    boolean existsByUsernameAndUserAccountState(String username, AccountState state);
     boolean existsByUniqueName(String uniqueName);
+    boolean existsByUniqueNameAndUserAccountState(String uniqueName, AccountState state);
     List<User> findAllByUniqueNameStartingWithAndRole(String uniqueNamePrefix, Role role);
 }

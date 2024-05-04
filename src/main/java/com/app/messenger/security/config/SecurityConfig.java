@@ -50,6 +50,8 @@ public class SecurityConfig {
                                             HttpMethod.POST,
                                             "/api/registration",
                                             "/api/authentication",
+                                            "/api/user/*/account/activation",
+                                            "/api/user/*/account/activation/email",
                                             "/api/jwt/**"
                                     ).permitAll()
 

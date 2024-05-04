@@ -2,6 +2,7 @@ package com.app.messenger.handler;
 
 import com.app.messenger.exception.SubscriptionSubscriberAlreadyExistsException;
 import com.app.messenger.exception.SubscriptionSubscriberNotExistsException;
+import com.app.messenger.exception.UserAccountNotFoundException;
 import com.app.messenger.exception.UserNotFoundException;
 import com.app.messenger.handler.dto.ExceptionResponse;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,17 @@ public class UserExceptionHandler {
         return ExceptionResponse
                 .builder()
                 .message("User not found")
+                .build();
+    }
+
+    @ExceptionHandler(value = {
+            UserAccountNotFoundException.class
+    })
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionResponse handleUserAccountNotFoundException() {
+        return ExceptionResponse
+                .builder()
+                .message("User account not found")
                 .build();
     }
 

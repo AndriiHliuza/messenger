@@ -47,6 +47,14 @@ application:
     admin:
       password: ${MESSENGER_ADMIN_PASSWORD}
 
+  email:
+    from: ${FROM_EMAIL}
+
+  user:
+    account:
+      activation-code:
+        expiration-time: 900000 # 15 min
+
   cors:
     origins:
       url: ${CORS_ORIGINS_URL}

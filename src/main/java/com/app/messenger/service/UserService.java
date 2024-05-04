@@ -1,6 +1,7 @@
 package com.app.messenger.service;
 
 import com.app.messenger.controller.dto.Subscription;
+import com.app.messenger.controller.dto.UserAccountDto;
 import com.app.messenger.controller.dto.UserDto;
 import com.app.messenger.repository.model.Role;
 import com.app.messenger.security.controller.dto.RegistrationRequest;
@@ -14,6 +15,8 @@ import java.util.List;
 public interface UserService {
     UserDto getUserByUsername(Role role, String username) throws Exception;
     UserDto getUserByUniqueName(Role role, String uniqueName) throws Exception;
+    UserAccountDto getUserAccountByUserUsername(String username) throws Exception;
+    UserAccountDto modifyUserAccount(String username, UserAccountDto userAccountDto) throws Exception;
     Collection<UserDto> getUsersPagedAndSorted(int page, int size, String order, Role userRole) throws Exception;
     UserDto updateUser(
             String username,

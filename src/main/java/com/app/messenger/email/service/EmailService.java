@@ -1,12 +1,12 @@
 package com.app.messenger.email.service;
 
+import com.app.messenger.email.dto.EmailDto;
 import jakarta.mail.MessagingException;
 
 import java.util.Map;
 
 public interface EmailService {
     void sendHtmlPageEmail(
-            String from,
             String to,
             String subject,
             String templateName,
@@ -14,11 +14,10 @@ public interface EmailService {
     ) throws MessagingException;
 
     void sendEmailForAccountActivation(
-            String from,
             String to,
-            String subject,
             String username,
-            String confirmationUrl,
             String activationCode
     ) throws MessagingException;
+
+    EmailDto buildEmail(String to, String subject, String text);
 }

@@ -19,7 +19,6 @@ import com.app.messenger.websocket.repository.ChatRepository;
 import com.app.messenger.websocket.repository.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -328,7 +327,9 @@ public class ChatServiceImpl implements ChatService {
             messageType = MessageType.CHAT_MEMBER_LEFT_CHAT;
         }
 
-        if (chatMemberRepository.count() == 0) {
+        List<ChatMember> chatMembers = chatMemberRepository.findAllByChatId(chat.getId());
+
+        if (chatMembers.isEmpty()) {
             notificationType = NotificationType.DELETED_GROUP_CHAT_NOTIFICATION;
             chatRepository.deleteById(convertedChatId);
         }

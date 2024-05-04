@@ -1,8 +1,10 @@
 package com.app.messenger.config;
 
 import com.app.messenger.repository.UserRepository;
+import com.app.messenger.repository.model.AccountState;
 import com.app.messenger.repository.model.Role;
 import com.app.messenger.repository.model.User;
+import com.app.messenger.repository.model.UserAccount;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -44,6 +46,16 @@ public class ApplicationConfig {
                         .role(Role.ROOT)
                         .build();
 
+                UserAccount rootAccount = UserAccount
+                        .builder()
+                        .user(root)
+                        .state(AccountState.ACTIVATED)
+                        .createdAt(ZonedDateTime.now())
+                        .activatedAt(ZonedDateTime.now())
+                        .build();
+
+                root.setUserAccount(rootAccount);
+
                 userRepository.save(root);
             }
 
@@ -59,6 +71,15 @@ public class ApplicationConfig {
                         .lastname("admin")
                         .role(Role.ADMIN)
                         .build();
+
+                UserAccount adminAccount = UserAccount
+                        .builder()
+                        .user(admin)
+                        .state(AccountState.ACTIVATED)
+                        .createdAt(ZonedDateTime.now())
+                        .activatedAt(ZonedDateTime.now())
+                        .build();
+                admin.setUserAccount(adminAccount);
 
                 userRepository.save(admin);
             }

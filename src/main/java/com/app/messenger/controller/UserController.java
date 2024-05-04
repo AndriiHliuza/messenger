@@ -1,9 +1,11 @@
 package com.app.messenger.controller;
 
 import com.app.messenger.controller.dto.Subscription;
+import com.app.messenger.controller.dto.UserAccountDto;
 import com.app.messenger.controller.dto.UserDto;
 import com.app.messenger.controller.dto.UserImageDto;
 import com.app.messenger.repository.model.Role;
+import com.app.messenger.repository.model.UserAccount;
 import com.app.messenger.service.UserImageService;
 import com.app.messenger.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +39,21 @@ public class UserController {
     @PreAuthorize("hasAuthority('READ_USER')")
     public UserDto getUserByUniqueName(@PathVariable String uniqueName) throws Exception {
         return userService.getUserByUniqueName(Role.USER, uniqueName);
+    }
+
+    @GetMapping("/users/{username}/account")
+    @PreAuthorize("hasAuthority('READ_USER')")
+    public UserAccountDto getUserAccountByUserUsername(@PathVariable String username) throws Exception {
+        return userService.getUserAccountByUserUsername(username);
+    }
+
+    @PatchMapping("/users/{username}/account")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
+    public UserAccountDto modifyUserAccount(
+            @PathVariable String username,
+            @RequestBody UserAccountDto userAccountDto
+    ) throws Exception {
+        return userService.modifyUserAccount(username, userAccountDto);
     }
 
     @GetMapping("/users")

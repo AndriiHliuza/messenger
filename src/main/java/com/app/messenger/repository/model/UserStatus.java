@@ -1,6 +1,6 @@
 package com.app.messenger.repository.model;
 
-public enum Status {
+public enum UserStatus {
     ONLINE,
     OFFLINE
 }

@@ -1,16 +1,17 @@
 package com.app.messenger.service;
 
 import com.app.messenger.controller.dto.Subscription;
+import com.app.messenger.controller.dto.UserAccountDto;
 import com.app.messenger.controller.dto.UserDto;
 import com.app.messenger.controller.dto.UserModificationRequest;
 import com.app.messenger.exception.SubscriptionSubscriberAlreadyExistsException;
 import com.app.messenger.exception.SubscriptionSubscriberNotExistsException;
+import com.app.messenger.exception.UserAccountNotFoundException;
 import com.app.messenger.exception.UserNotFoundException;
 import com.app.messenger.repository.SubscriptionSubscriberRepository;
+import com.app.messenger.repository.UserAccountRepository;
 import com.app.messenger.repository.UserRepository;
-import com.app.messenger.repository.model.Role;
-import com.app.messenger.repository.model.SubscriptionSubscriber;
-import com.app.messenger.repository.model.User;
+import com.app.messenger.repository.model.*;
 import com.app.messenger.security.controller.dto.RegistrationRequest;
 import com.app.messenger.security.controller.dto.RegistrationResponse;
 import com.app.messenger.security.exception.PasswordNotValidException;
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -40,9 +42,11 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final UserAccountRepository userAccountRepository;
     private final SubscriptionSubscriberRepository subscriptionSubscriberRepository;
 
     private final UserConverter userConverter;
+    private final UserAccountConverter userAccountConverter;
     private final UserRegistrationConverter userRegistrationConverter;
     private final SubscriptionSubscriberConverter subscriptionSubscriberConverter;
 
@@ -71,6 +75,51 @@ public class UserServiceImpl implements UserService {
                         () -> new UserNotFoundException("User with uniqueName " + uniqueName + " not found")
                 );
         return userConverter.toDto(user);
+    }
+
+    @Override
+    public UserAccountDto getUserAccountByUserUsername(String username) throws Exception {
+        User user = userRepository
+                .findByUsername(username)
+                .orElseThrow(
+                        () -> new UserNotFoundException("User with username " + username + " not found")
+                );
+        UserAccount userAccount = user.getUserAccount();
+
+        return userAccountConverter.toDto(userAccount);
+    }
+
+    @Override
+    public UserAccountDto modifyUserAccount(String username, UserAccountDto userAccountDto) throws Exception {
+        if (username == null || userAccountDto == null) {
+            throw new IllegalArgumentException("UserAccountDto or username is null");
+        }
+
+        UserDto userDto = userAccountDto.getUserDto();
+        if (userDto == null || !username.equals(userDto.getUsername())) {
+            throw new IllegalArgumentException("Usernames are different");
+        }
+
+        User user = userRepository
+                .findByUsername(username)
+                .orElseThrow(
+                        () -> new UserNotFoundException("user with username " + username + " not found")
+                );
+
+        UserAccount userAccount = userAccountRepository
+                .findByUserUsername(username)
+                .orElseThrow(
+                        () -> new UserAccountNotFoundException("User account for user with username "
+                                + user.getUsername() + " not found")
+                );
+
+        AccountState accountState = userAccountDto.getState();
+        if (!userAccount.getState().equals(accountState)) {
+            userAccount.setState(accountState);
+        }
+        UserAccount savedUserAccount = userAccountRepository.save(userAccount);
+
+        return userAccountConverter.toDto(savedUserAccount);
     }
 
     @Override
@@ -273,6 +322,13 @@ public class UserServiceImpl implements UserService {
 
         User userToSave = userRegistrationConverter.toEntity(registrationRequest);
         userToSave.setRole(Role.ADMIN);
+        userToSave.setUserAccount(UserAccount
+                .builder()
+                .user(userToSave)
+                .state(AccountState.ACTIVATED)
+                .createdAt(ZonedDateTime.now())
+                .activatedAt(ZonedDateTime.now())
+                .build());
         User savedUser = userRepository.save(userToSave);
 
         UserDto registeredUserDto = userConverter.toDto(savedUser);

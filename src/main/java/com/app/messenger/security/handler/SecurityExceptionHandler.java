@@ -31,6 +31,28 @@ public class SecurityExceptionHandler {
                 .build();
     }
 
+    @ExceptionHandler(value = {
+            UserAccountNotActivatedException.class
+    })
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ExceptionResponse handleUserAccountNotActivatedException() {
+        return ExceptionResponse
+                .builder()
+                .message("User account is not activated")
+                .build();
+    }
+
+    @ExceptionHandler(value = {
+            UserAccountBlockedException.class
+    })
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ExceptionResponse handleUserAccountBlockedException() {
+        return ExceptionResponse
+                .builder()
+                .message("User account is blocked")
+                .build();
+    }
+
     @ExceptionHandler(value = {SignatureException.class})
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ExceptionResponse handleJwtException() {

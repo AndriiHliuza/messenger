@@ -1,9 +1,11 @@
 package com.app.messenger.email.service;
 
+import com.app.messenger.email.dto.EmailDto;
 import com.app.messenger.email.dto.EmailTemplate;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -21,10 +23,15 @@ public class EmailServiceImpl implements EmailService {
     private final JavaMailSender javaMailSender;
     private final SpringTemplateEngine springTemplateEngine;
 
+    @Value("${application.email.from}")
+    private String from;
+
+    @Value("${application.cors.origins.url}")
+    private String corsOriginsUrl;
+
     @Override
     @Async
     public void sendHtmlPageEmail(
-            String from,
             String to,
             String subject,
             String templateName,
@@ -51,24 +58,31 @@ public class EmailServiceImpl implements EmailService {
     @Override
     @Async
     public void sendEmailForAccountActivation(
-            String from,
             String to,
-            String subject,
             String username,
-            String confirmationUrl,
             String activationCode
     ) throws MessagingException {
         Map<String, Object> extraProperties = new HashMap<>();
         extraProperties.put("username", username);
-        extraProperties.put("confirmationUrl", confirmationUrl);
+        extraProperties.put("confirmationUrl", corsOriginsUrl + "/user/" + username + "/account/activation");
         extraProperties.put("activationCode", activationCode);
 
         sendHtmlPageEmail(
-                from,
                 to,
-                subject,
+                EmailTemplate.ACCOUNT_ACTIVATION.getDescription(),
                 EmailTemplate.ACCOUNT_ACTIVATION.getName(),
                 extraProperties
         );
+    }
+
+    @Override
+    public EmailDto buildEmail(String to, String subject, String text) {
+        return EmailDto
+                .builder()
+                .from(from)
+                .to(to)
+                .subject(subject)
+                .text(subject)
+                .build();
     }
 }

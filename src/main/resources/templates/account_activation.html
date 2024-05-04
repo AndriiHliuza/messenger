@@ -43,6 +43,7 @@
         <h1 class="heading">Account Activation</h1>
         <p th:text="'Hello ' + ${username} + ','"></p>
         <p>Thank you for signing up! Please use the following activation code to activate your account:</p>
+        <p><strong>Note:</strong> This code will expire in 24h.</p>
         <p class="activation-code" th:text="${activationCode}"></p>
         <div class="activation-link">
             <a th:href="${confirmationUrl}" target="_blank">Activate your account</a>

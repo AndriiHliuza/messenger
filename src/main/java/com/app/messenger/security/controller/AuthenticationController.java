@@ -1,5 +1,7 @@
 package com.app.messenger.security.controller;
 
+import com.app.messenger.controller.dto.UserDto;
+import com.app.messenger.email.dto.EmailDto;
 import com.app.messenger.security.controller.dto.*;
 import com.app.messenger.security.service.AuthenticationService;
 import jakarta.validation.Valid;
@@ -26,5 +28,19 @@ public class AuthenticationController {
             @Valid @RequestBody AuthenticationRequest authenticationRequest
     ) throws Exception {
         return authenticationService.authenticate(authenticationRequest);
+    }
+
+    @PostMapping("/user/{username}/account/activation/email")
+    public EmailDto sendEmailForUserAccountActivation(
+            @PathVariable String username,
+            @Valid @RequestBody EmailDto emailDto) throws Exception {
+        return authenticationService.sendEmailForUserAccountActivation(username, emailDto);
+    }
+
+    @PostMapping("/user/{username}/account/activation")
+    public UserDto activateUserAccount(
+            @PathVariable String username,
+            @RequestBody UserAccountActivationRequest userAccountActivationRequest) throws Exception {
+        return authenticationService.activateUserAccount(username, userAccountActivationRequest);
     }
 }
