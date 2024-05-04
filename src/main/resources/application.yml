@@ -43,9 +43,17 @@ application:
         algorithm: AES
         aes-key: ${ENCRYPTION_AES_KEY}
     root:
-      password: ${MESSENGER_ROOT_PASSWORD}
+      username: ${APP_ROOT_USERNAME}
+      password: ${APP_ROOT_PASSWORD}
+      uniqueName: ${APP_ROOT_UNIQUE_NAME}
+      firstname: ${APP_ROOT_FIRST_NAME}
+      lastname: ${APP_ROOT_LAST_NAME}
     admin:
-      password: ${MESSENGER_ADMIN_PASSWORD}
+      username: ${APP_ADMIN_USERNAME}
+      password: ${APP_ADMIN_PASSWORD}
+      uniqueName: ${APP_MESSENGER_ADMIN_UNIQUE_NAME}
+      firstname: ${APP_ROOT_FIRST_NAME}
+      lastname: ${APP_ROOT_LAST_NAME}
 
   email:
     from: ${FROM_EMAIL}

@@ -24,10 +24,10 @@ public class EmailServiceImpl implements EmailService {
     private final SpringTemplateEngine springTemplateEngine;
 
     @Value("${application.email.from}")
-    private String from;
+    private String FROM;
 
     @Value("${application.cors.origins.url}")
-    private String corsOriginsUrl;
+    private String CORS_ALLOWED_ORIGINS;
 
     @Override
     @Async
@@ -46,7 +46,7 @@ public class EmailServiceImpl implements EmailService {
         Context context = new Context();
         context.setVariables(extraProperties);
 
-        mimeMessageHelper.setFrom(from);
+        mimeMessageHelper.setFrom(FROM);
         mimeMessageHelper.setTo(to);
         mimeMessageHelper.setSubject(subject);
 
@@ -64,7 +64,7 @@ public class EmailServiceImpl implements EmailService {
     ) throws MessagingException {
         Map<String, Object> extraProperties = new HashMap<>();
         extraProperties.put("username", username);
-        extraProperties.put("confirmationUrl", corsOriginsUrl + "/user/" + username + "/account/activation");
+        extraProperties.put("confirmationUrl", CORS_ALLOWED_ORIGINS + "/user/" + username + "/account/activation");
         extraProperties.put("activationCode", activationCode);
 
         sendHtmlPageEmail(
@@ -79,7 +79,7 @@ public class EmailServiceImpl implements EmailService {
     public EmailDto buildEmail(String to, String subject, String text) {
         return EmailDto
                 .builder()
-                .from(from)
+                .from(FROM)
                 .to(to)
                 .subject(subject)
                 .text(subject)

@@ -32,9 +32,17 @@ application:
       encryption:
         aes-key: e7b824fa21866572831e7a30aaa01957
     root:
+      username: root@root
       password: rootpassword
+      uniqueName: root
+      firstname: root
+      lastname: root
     admin:
+      username: admin@admin
       password: adminpassword
+      uniqueName: admin
+      firstname: admin
+      lastname: admin
 
   cors:
     origins:

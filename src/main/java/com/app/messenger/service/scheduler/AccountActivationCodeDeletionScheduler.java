@@ -16,10 +16,10 @@ import java.util.TimerTask;
 public class AccountActivationCodeDeletionScheduler {
     private final UserRepository userRepository;
     @Value("${application.user.account.activation-code.expiration-time}")
-    private String accountActivationCodeExpirationTime;
+    private String ACCOUNT_ACTIVATION_CODE_EXPIRATION_TIME;
 
     public void scheduleUserDeletionForNotActivatedUser(User user) {
-        int expirationTime = Integer.parseInt(accountActivationCodeExpirationTime);
+        int expirationTime = Integer.parseInt(ACCOUNT_ACTIVATION_CODE_EXPIRATION_TIME);
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override

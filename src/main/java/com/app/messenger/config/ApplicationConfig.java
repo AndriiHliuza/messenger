@@ -20,11 +20,27 @@ import java.time.format.DateTimeFormatter;
 @RequiredArgsConstructor
 public class ApplicationConfig {
 
+    @Value("${application.security.root.username}")
+    private String ROOT_USERNAME;
     @Value("${application.security.root.password}")
     private String ROOT_PASSWORD;
+    @Value("${application.security.root.uniqueName}")
+    private String ROOT_UNIQUE_NAME;
+    @Value("${application.security.root.firstname}")
+    private String ROOT_FIRST_NAME;
+    @Value("${application.security.root.lastname}")
+    private String ROOT_LAST_NAME;
 
+    @Value("${application.security.admin.username}")
+    private String ADMIN_USERNAME;
     @Value("${application.security.admin.password}")
     private String ADMIN_PASSWORD;
+    @Value("${application.security.admin.uniqueName}")
+    private String ADMIN_UNIQUE_NAME;
+    @Value("${application.security.admin.firstname}")
+    private String ADMIN_FIRST_NAME;
+    @Value("${application.security.admin.lastname}")
+    private String ADMIN_LAST_NAME;
 
     private final UserRepository userRepository;
 
@@ -33,16 +49,16 @@ public class ApplicationConfig {
     public CommandLineRunner run(PasswordEncoder passwordEncoder) {
         return args -> {
 
-            if (!userRepository.existsByUsername("root@root")) {
+            if (!userRepository.existsByUsername(ROOT_USERNAME)) {
 
                 User root = User
                         .builder()
-                        .username("root@root")
+                        .username(ROOT_USERNAME)
                         .password(passwordEncoder.encode(ROOT_PASSWORD))
-                        .uniqueName("root")
+                        .uniqueName(ROOT_UNIQUE_NAME)
                         .registrationDate(ZonedDateTime.now())
-                        .firstname("root")
-                        .lastname("root")
+                        .firstname(ROOT_FIRST_NAME)
+                        .lastname(ROOT_LAST_NAME)
                         .role(Role.ROOT)
                         .build();
 
@@ -59,16 +75,16 @@ public class ApplicationConfig {
                 userRepository.save(root);
             }
 
-            if (!userRepository.existsByUsername("admin@admin")) {
+            if (!userRepository.existsByUsername(ADMIN_USERNAME)) {
 
                 User admin = User
                         .builder()
-                        .username("admin@admin")
+                        .username(ADMIN_USERNAME)
                         .password(passwordEncoder.encode(ADMIN_PASSWORD))
-                        .uniqueName("admin")
+                        .uniqueName(ADMIN_UNIQUE_NAME)
                         .registrationDate(ZonedDateTime.now())
-                        .firstname("admin")
-                        .lastname("admin")
+                        .firstname(ADMIN_FIRST_NAME)
+                        .lastname(ADMIN_LAST_NAME)
                         .role(Role.ADMIN)
                         .build();
 
