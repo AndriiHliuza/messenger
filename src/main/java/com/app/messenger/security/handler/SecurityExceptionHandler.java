@@ -100,7 +100,7 @@ public class SecurityExceptionHandler {
     }
 
     @ExceptionHandler(value = {
-            E2EEKeyNotFoundException.class
+            EncryptionKeyNotFoundException.class
     })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ExceptionResponse handleE2EEExceptions() {

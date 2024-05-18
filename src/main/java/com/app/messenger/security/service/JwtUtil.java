@@ -37,7 +37,7 @@ public class JwtUtil {
     private int ACCESS_TOKEN_EXPIRATION_DATE;
 
     private final JwtRepository jwtRepository;
-    private final EncryptionService encryptionService;
+    private final EncryptionService encryptionServiceImpl;
 
     public Jwt generateToken(User user, TokenTargetType targetType) throws Exception {
         Jwt token = jwtRepository
@@ -56,7 +56,7 @@ public class JwtUtil {
             case REFRESH -> generateRefreshToken(user);
         };
 
-        String encryptedContent = encryptionService.encrypt(plainContent);
+        String encryptedContent = encryptionServiceImpl.encrypt(plainContent);
 
         token = Jwt
                 .builder()
@@ -129,7 +129,7 @@ public class JwtUtil {
         return username.equals(userDetails.getUsername())
                 && !isTokenExpired(jwt)
                 && (userJwt != null)
-                && encryptionService.matches(jwt, userJwt.getContent());
+                && encryptionServiceImpl.matches(jwt, userJwt.getContent());
     }
 
     private boolean isTokenExpired(String jwt) {

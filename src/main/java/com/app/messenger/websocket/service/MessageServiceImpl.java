@@ -4,9 +4,8 @@ import com.app.messenger.controller.dto.UserDto;
 import com.app.messenger.exception.UserNotFoundException;
 import com.app.messenger.repository.UserRepository;
 import com.app.messenger.repository.model.User;
-import com.app.messenger.security.exception.E2EEKeyNotFoundException;
+import com.app.messenger.security.exception.EncryptionKeyNotFoundException;
 import com.app.messenger.security.service.AuthenticationService;
-import com.app.messenger.security.service.E2EEService;
 import com.app.messenger.security.service.EncryptionService;
 import com.app.messenger.service.MessageConverter;
 import com.app.messenger.service.UserConverter;
@@ -44,8 +43,8 @@ public class MessageServiceImpl implements MessageService {
     private final ChatMemberRepository chatMemberRepository;
     private final AuthenticationService authenticationService;
     private final SimpMessagingTemplate simpMessagingTemplate;
-    private final EncryptionService encryptionService;
-    private final E2EEService e2eeService;
+    private final EncryptionService encryptionServiceImpl;
+    private final EncryptionService symmetricEncryptionServiceImpl;
 
     @Override
     public Collection<MessageDto> getAllMessagesFromChat(String chatId) throws Exception {
@@ -69,7 +68,7 @@ public class MessageServiceImpl implements MessageService {
             throw new IllegalArgumentException("Invalid message type");
         }
 
-        String decryptedText = e2eeService.decrypt(messageDto.getContent());
+        String decryptedText = symmetricEncryptionServiceImpl.decrypt(messageDto.getContent());
         messageDto.setContent(decryptedText);
 
         Message message = messageConverter.toEntity(messageDto);
@@ -97,7 +96,7 @@ public class MessageServiceImpl implements MessageService {
         messageStatusRepository.saveAll(messageStatuses);
 
         MessageDto messageToSend = messageConverter.toDto(savedMessage);
-        String encryptedText = e2eeService.encrypt(messageToSend.getContent());
+        String encryptedText = symmetricEncryptionServiceImpl.encrypt(messageToSend.getContent());
         messageToSend.setContent(encryptedText);
         processAndSendMessageToChat(messageToSend);
 
@@ -135,8 +134,8 @@ public class MessageServiceImpl implements MessageService {
                                 + " not found in chat with id " + chatId)
                 );
 
-        String decryptedText = e2eeService.decrypt(messageDto.getContent());
-        String encryptedContent = encryptionService.encrypt(decryptedText);
+        String decryptedText = symmetricEncryptionServiceImpl.decrypt(messageDto.getContent());
+        String encryptedContent = encryptionServiceImpl.encrypt(decryptedText);
         String previousEncryptedContent = message.getContent();
         if (encryptedContent.equals(previousEncryptedContent)) {
             throw new IllegalArgumentException("New message content is equal to the previously saved message content");
@@ -144,7 +143,7 @@ public class MessageServiceImpl implements MessageService {
         message.setContent(encryptedContent);
         Message savedMessage = messageRepository.save(message);
         messageDtoToReturn = messageConverter.toDto(savedMessage);
-        String encryptedText = e2eeService.encrypt(messageDtoToReturn.getContent());
+        String encryptedText = symmetricEncryptionServiceImpl.encrypt(messageDtoToReturn.getContent());
         messageDtoToReturn.setContent(encryptedText);
         processAndSendMessageToChat(messageDtoToReturn);
 
@@ -180,7 +179,7 @@ public class MessageServiceImpl implements MessageService {
 
         if (chatMember.getMemberRole().equals(MemberRole.ADMIN) || currentUser.getId().equals(messageSender.getId())) {
             messageDtoToReturn = messageConverter.toDto(message);
-            String encryptedText = e2eeService.encrypt(messageDtoToReturn.getContent());
+            String encryptedText = symmetricEncryptionServiceImpl.encrypt(messageDtoToReturn.getContent());
             messageDtoToReturn.setContent(encryptedText);
             messageDtoToReturn.setType(MessageType.DELETED_MESSAGE);
             messageRepository.deleteById(message.getId());
@@ -195,10 +194,10 @@ public class MessageServiceImpl implements MessageService {
         try {
             for (MessageDto messageDto : messagesToEncrypt) {
                 String content = messageDto.getContent();
-                String encryptedContent = e2eeService.encrypt(content);
+                String encryptedContent = symmetricEncryptionServiceImpl.encrypt(content);
                 messageDto.setContent(encryptedContent);
             }
-        } catch (E2EEKeyNotFoundException e) {
+        } catch (EncryptionKeyNotFoundException e) {
             messagesToEncrypt.forEach(messageDto -> messageDto.setContent(null));
         }
 

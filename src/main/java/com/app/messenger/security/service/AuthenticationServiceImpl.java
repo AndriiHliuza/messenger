@@ -41,7 +41,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final CodeGenerator codeGenerator;
-    private final EncryptionService encryptionService;
+    private final EncryptionService encryptionServiceImpl;
     private final EmailService emailService;
     private final AccountActivationCodeDeletionScheduler accountActivationCodeDeletionScheduler;
 
@@ -66,7 +66,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         UserAccountActivationCode userAccountActivationCode = UserAccountActivationCode
                 .builder()
                 .userAccount(userAccount)
-                .code(encryptionService.encrypt(activationCode))
+                .code(encryptionServiceImpl.encrypt(activationCode))
                 .build();
         userAccount.setUserAccountActivationCode(userAccountActivationCode);
         userToSave.setUserAccount(userAccount);
@@ -127,7 +127,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         String activationCode = codeGenerator.generate(6);
         UserAccountActivationCode userAccountActivationCode = user.getUserAccount().getUserAccountActivationCode();
-        userAccountActivationCode.setCode(encryptionService.encrypt(activationCode));
+        userAccountActivationCode.setCode(encryptionServiceImpl.encrypt(activationCode));
         User savedUser = userRepository.save(user);
 
         emailService.sendEmailForAccountActivation(
@@ -169,7 +169,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         UserAccountActivationCode userAccountActivationCode = userAccount.getUserAccountActivationCode();
 
         String encryptedActivationCode = userAccountActivationCode.getCode();
-        if (encryptionService.matches(activationCode, encryptedActivationCode)) {
+        if (encryptionServiceImpl.matches(activationCode, encryptedActivationCode)) {
             userAccount.setState(AccountState.ACTIVATED);
             userAccount.setActivatedAt(ZonedDateTime.now());
             userAccount.setUserAccountActivationCode(null);

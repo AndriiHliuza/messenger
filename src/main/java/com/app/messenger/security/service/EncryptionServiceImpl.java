@@ -20,21 +20,21 @@ public class EncryptionServiceImpl implements EncryptionService {
         secretKey = new SecretKeySpec(encryptionKey.getBytes(), encryptionAlgorithm);
     }
 
-    public String encrypt(String value) throws Exception {
+    public String encrypt(String rawData) throws Exception {
         cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-        byte[] encryptedValueBytes = cipher.doFinal(value.getBytes());
+        byte[] encryptedValueBytes = cipher.doFinal(rawData.getBytes());
         return Base64.getEncoder().encodeToString(encryptedValueBytes);
     }
 
-    public String decrypt(String encryptedValue) throws Exception {
+    public String decrypt(String encryptedData) throws Exception {
         cipher.init(Cipher.DECRYPT_MODE, secretKey);
-        byte[] encryptedValueBytes = Base64.getDecoder().decode(encryptedValue);
+        byte[] encryptedValueBytes = Base64.getDecoder().decode(encryptedData);
         byte[] decryptedValueBytes = cipher.doFinal(encryptedValueBytes);
         return new String(decryptedValueBytes);
     }
 
-    public boolean matches(String rawValue, String encryptedValue) throws Exception {
-        String encryptedRawValue = encrypt(rawValue);
-        return encryptedRawValue.equals(encryptedValue);
+    public boolean matches(String rawData, String encryptedData) throws Exception {
+        String encryptedRawValue = encrypt(rawData);
+        return encryptedRawValue.equals(encryptedData);
     }
 }

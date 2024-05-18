@@ -6,6 +6,6 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class E2EEDto {
-    private String publicKey;
+public class EncryptionKeyDto {
+    private String encryptionKey;
 }

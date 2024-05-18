@@ -1,8 +1,8 @@
 package com.app.messenger.security.service;
 
 import com.app.messenger.repository.model.User;
-import com.app.messenger.security.controller.dto.E2EEDto;
-import com.app.messenger.security.exception.E2EEKeyNotFoundException;
+import com.app.messenger.security.controller.dto.EncryptionKeyDto;
+import com.app.messenger.security.exception.EncryptionKeyNotFoundException;
 import com.app.messenger.websocket.controller.dto.CryptoKeysContainer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,24 +16,49 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
-public class E2EEServiceImpl implements E2EEService {
+public class AsymmetricEncryptionServiceImpl implements EncryptionService {
+    private final String ALGORITHM = "RSA";
     private final AuthenticationService authenticationService;
     private final ConcurrentHashMap<UUID, CryptoKeysContainer> cryptoKeysContainers = new ConcurrentHashMap<>(); // userId cryptoKeysContainer
 
-    private KeyPair generateKeyPair() throws NoSuchAlgorithmException {
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-        keyPairGenerator.initialize(2048);
-        return keyPairGenerator.generateKeyPair();
+    @Override
+    public String encrypt(String rawData) throws Exception {
+        PublicKey publicKey = getPublicKey();
+        if (publicKey == null) {
+            throw new EncryptionKeyNotFoundException("User's public encryption key does not exist");
+        }
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+        byte[] encryptedBytes = cipher.doFinal(rawData.getBytes());
+        return Base64.getEncoder().encodeToString(encryptedBytes);
     }
 
     @Override
-    public E2EEDto exchangeE2EEPublicKeys(E2EEDto e2eeDto) throws Exception {
+    public String decrypt(String encryptedData) throws Exception {
+        PrivateKey privateKey = getPrivateKey();
+        if (privateKey == null) {
+            throw new EncryptionKeyNotFoundException("Server's private encryption key does not exist");
+        }
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.DECRYPT_MODE, privateKey);
+        byte[] encryptedBytes = Base64.getDecoder().decode(encryptedData);
+        byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
+        return new String(decryptedBytes);
+    }
+
+    @Override
+    public boolean matches(String rawData, String encryptedData) throws Exception {
+        String encryptedRawData = encrypt(rawData);
+        return encryptedRawData.equals(encryptedData);
+    }
+
+    public EncryptionKeyDto exchangePublicKeys(EncryptionKeyDto encryptionKeyDto) throws Exception {
         User currentUser = authenticationService.getCurrentUser();
 
         KeyPair serverKeyPair = generateKeyPair();
         PrivateKey serverPrivateKey = serverKeyPair.getPrivate();
         PublicKey serverPublicKey = serverKeyPair.getPublic();
-        PublicKey userPublicKey = convertStringToPublicKeyAndGet(e2eeDto.getPublicKey());
+        PublicKey userPublicKey = convertStringToPublicKeyAndGet(encryptionKeyDto.getEncryptionKey());
         CryptoKeysContainer cryptoKeysContainer = CryptoKeysContainer
                 .builder()
                 .serverPrivateKey(serverPrivateKey)
@@ -42,20 +67,26 @@ public class E2EEServiceImpl implements E2EEService {
                 .build();
         cryptoKeysContainers.put(currentUser.getId(), cryptoKeysContainer);
 
-        return E2EEDto
+        return EncryptionKeyDto
                 .builder()
-                .publicKey(Base64
+                .encryptionKey(Base64
                         .getEncoder()
                         .encodeToString(serverPublicKey.getEncoded())
                 )
                 .build();
     }
 
+    private KeyPair generateKeyPair() throws NoSuchAlgorithmException {
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(ALGORITHM);
+        keyPairGenerator.initialize(2048);
+        return keyPairGenerator.generateKeyPair();
+    }
+
     private PublicKey convertStringToPublicKeyAndGet(String publicKeyString) throws Exception {
         publicKeyString = publicKeyString.trim().replaceAll("\\s+", "");
         byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyString);
         X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(publicKeyBytes);
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM);
         return keyFactory.generatePublic(x509EncodedKeySpec);
     }
 
@@ -69,30 +100,5 @@ public class E2EEServiceImpl implements E2EEService {
         User currentUser = authenticationService.getCurrentUser();
         CryptoKeysContainer cryptoKeysContainer = cryptoKeysContainers.get(currentUser.getId());
         return cryptoKeysContainer != null ? cryptoKeysContainer.getServerPrivateKey() : null;
-    }
-
-    @Override
-    public String encrypt(String plainText) throws Exception {
-        PublicKey publicKey = getPublicKey();
-        if (publicKey == null) {
-            throw new E2EEKeyNotFoundException("User's public encryption key does not exist");
-        }
-        Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-        byte[] encryptedBytes = cipher.doFinal(plainText.getBytes());
-        return Base64.getEncoder().encodeToString(encryptedBytes);
-    }
-
-    @Override
-    public String decrypt(String encryptedText) throws Exception {
-        PrivateKey privateKey = getPrivateKey();
-        if (privateKey == null) {
-            throw new E2EEKeyNotFoundException("Server's private encryption key does not exist");
-        }
-        Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.DECRYPT_MODE, privateKey);
-        byte[] encryptedBytes = Base64.getDecoder().decode(encryptedText);
-        byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
-        return new String(decryptedBytes);
     }
 }

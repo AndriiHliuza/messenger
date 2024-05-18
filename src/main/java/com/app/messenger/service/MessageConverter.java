@@ -23,7 +23,7 @@ public class MessageConverter implements Converter<MessageDto, Message> {
     private final UserConverter userConverter;
     private final AuthenticationService authenticationService;
     private final MessageStatusRepository messageStatusRepository;
-    private final EncryptionService encryptionService;
+    private final EncryptionService encryptionServiceImpl;
     @Override
     public MessageDto toDto(Message message) throws Exception {
         UUID messageId = message.getId();
@@ -34,7 +34,7 @@ public class MessageConverter implements Converter<MessageDto, Message> {
         User sender = message.getSender();
         UserDto senderDto = userConverter.toDto(sender);
         String chatId = message.getChat().getId().toString();
-        String decryptedContent = encryptionService.decrypt(message.getContent());
+        String decryptedContent = encryptionServiceImpl.decrypt(message.getContent());
         MessageStatus messageStatusForCurrentUser = messageStatusRepository
                 .findByMessageIdAndUserId(messageId, currentUserId)
                 .orElseThrow(
@@ -70,7 +70,7 @@ public class MessageConverter implements Converter<MessageDto, Message> {
                         () -> new ChatNotFoundException("Chat with name: " + chatId + "and user: " + username + " not found in database")
                 );
 
-        String encryptedContent = encryptionService.encrypt(messageDto.getContent());
+        String encryptedContent = encryptionServiceImpl.encrypt(messageDto.getContent());
 
         MessageType messageType = messageDto.getType();
         if (messageDto.getContent() == null || messageDto.getContent().isBlank()) {
