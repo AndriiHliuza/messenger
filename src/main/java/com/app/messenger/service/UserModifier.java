@@ -6,6 +6,8 @@ import com.app.messenger.repository.UserImageRepository;
 import com.app.messenger.repository.UserRepository;
 import com.app.messenger.repository.model.User;
 import com.app.messenger.repository.model.UserImage;
+import com.app.messenger.service.converter.MultipartFileToUserImageDtoConverter;
+import com.app.messenger.service.converter.UserImageConverter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;

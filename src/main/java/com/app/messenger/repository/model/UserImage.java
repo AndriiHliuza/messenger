@@ -1,6 +1,6 @@
 package com.app.messenger.repository.model;
 
-import com.app.messenger.service.ImageTypeConverter;
+import com.app.messenger.service.converter.ImageTypeConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

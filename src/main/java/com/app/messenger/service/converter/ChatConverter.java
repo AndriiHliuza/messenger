@@ -1,4 +1,4 @@
-package com.app.messenger.service;
+package com.app.messenger.service.converter;
 
 import com.app.messenger.controller.dto.UserDto;
 import com.app.messenger.repository.UserRepository;

@@ -5,7 +5,7 @@ import com.app.messenger.exception.UserNotFoundException;
 import com.app.messenger.repository.UserRepository;
 import com.app.messenger.repository.model.User;
 import com.app.messenger.security.service.AuthenticationService;
-import com.app.messenger.service.UserConverter;
+import com.app.messenger.service.converter.UserConverter;
 import com.app.messenger.websocket.controller.dto.ChatDto;
 import com.app.messenger.websocket.controller.dto.ChatMemberDto;
 import com.app.messenger.websocket.controller.dto.notifications.ChatNotificationDto;

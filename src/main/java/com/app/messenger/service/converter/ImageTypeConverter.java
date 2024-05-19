@@ -1,4 +1,4 @@
-package com.app.messenger.service;
+package com.app.messenger.service.converter;
 
 import com.app.messenger.repository.model.ImageType;
 import jakarta.persistence.AttributeConverter;

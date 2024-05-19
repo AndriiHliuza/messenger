@@ -9,6 +9,7 @@ import com.app.messenger.repository.UserRepository;
 import com.app.messenger.repository.model.Post;
 import com.app.messenger.repository.model.User;
 import com.app.messenger.security.service.AuthenticationService;
+import com.app.messenger.service.converter.PostConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

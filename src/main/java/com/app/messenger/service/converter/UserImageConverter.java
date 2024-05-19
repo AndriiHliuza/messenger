@@ -1,4 +1,4 @@
-package com.app.messenger.service;
+package com.app.messenger.service.converter;
 
 import com.app.messenger.controller.dto.UserImageDto;
 import com.app.messenger.exception.InvalidImageTypeException;
@@ -7,6 +7,8 @@ import com.app.messenger.repository.UserRepository;
 import com.app.messenger.repository.model.ImageType;
 import com.app.messenger.repository.model.User;
 import com.app.messenger.repository.model.UserImage;
+import com.app.messenger.service.CompressionUtil;
+import com.app.messenger.service.converter.Converter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

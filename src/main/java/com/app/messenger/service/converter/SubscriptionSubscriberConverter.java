@@ -1,4 +1,4 @@
-package com.app.messenger.service;
+package com.app.messenger.service.converter;
 
 import com.app.messenger.controller.dto.Subscription;
 import com.app.messenger.exception.UserNotFoundException;
@@ -7,6 +7,7 @@ import com.app.messenger.repository.UserRepository;
 import com.app.messenger.repository.model.Role;
 import com.app.messenger.repository.model.SubscriptionSubscriber;
 import com.app.messenger.repository.model.User;
+import com.app.messenger.service.converter.Converter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

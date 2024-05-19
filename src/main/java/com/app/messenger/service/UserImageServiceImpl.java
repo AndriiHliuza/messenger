@@ -5,6 +5,7 @@ import com.app.messenger.exception.UserNotFoundException;
 import com.app.messenger.repository.UserImageRepository;
 import com.app.messenger.repository.UserRepository;
 import com.app.messenger.repository.model.User;
+import com.app.messenger.service.converter.UserImageConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
