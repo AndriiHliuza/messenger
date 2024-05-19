@@ -29,8 +29,8 @@ public interface UserService {
             MultipartFile userImage
     ) throws Exception;
     UserDto deleteUser(String username) throws Exception;
-    List<UserDto> getUserSubscriptions(String username) throws Exception;
-    List<UserDto> getUserSubscribers(String username) throws Exception;
+    List<UserDto> getUserSubscriptions(String uniqueName) throws Exception;
+    List<UserDto> getUserSubscribers(String uniqueName) throws Exception;
     Subscription subscribe(String subscriberUniqueName, Subscription subscription) throws Exception;
     Subscription isSubscribed(String userUniqueName, String userSubscriptionUniqueName) throws Exception;
     Subscription unsubscribe(String userUniqueName, String userSubscriptionUniqueName) throws Exception;

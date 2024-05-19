@@ -112,16 +112,16 @@ public class UserController {
         return userImageService.getUserImage(uniqueName);
     }
 
-    @GetMapping("/users/{username}/subscriptions")
+    @GetMapping("/users/{uniqueName}/subscriptions")
     @PreAuthorize("hasAuthority('READ_USER')")
-    public List<UserDto> getUserSubscriptions(@PathVariable String username) throws Exception {
-        return userService.getUserSubscriptions(username);
+    public List<UserDto> getUserSubscriptions(@PathVariable String uniqueName) throws Exception {
+        return userService.getUserSubscriptions(uniqueName);
     }
 
-    @GetMapping("/users/{username}/subscribers")
+    @GetMapping("/users/{uniqueName}/subscribers")
     @PreAuthorize("hasAuthority('READ_USER')")
-    public List<UserDto> getUserSubscribers(@PathVariable String username) throws Exception {
-        return userService.getUserSubscribers(username);
+    public List<UserDto> getUserSubscribers(@PathVariable String uniqueName) throws Exception {
+        return userService.getUserSubscribers(uniqueName);
     }
 
     @PostMapping("/users/{authenticatedUserUniqueName}/subscriptions")

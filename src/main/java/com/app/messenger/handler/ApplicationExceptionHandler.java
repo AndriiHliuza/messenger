@@ -2,6 +2,7 @@ package com.app.messenger.handler;
 
 import com.app.messenger.exception.DecompressionException;
 import com.app.messenger.exception.InvalidImageTypeException;
+import com.app.messenger.exception.PostNotFoundException;
 import com.app.messenger.handler.dto.ExceptionResponse;
 import io.jsonwebtoken.CompressionException;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,28 @@ public class ApplicationExceptionHandler {
         return ExceptionResponse
                 .builder()
                 .message("Invalid values")
+                .build();
+    }
+
+    @ExceptionHandler(value = {
+            UnsupportedOperationException.class
+    })
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionResponse handleUnsupportedOperationException() {
+        return ExceptionResponse
+                .builder()
+                .message("Unsupported operation")
+                .build();
+    }
+
+    @ExceptionHandler(value = {
+            PostNotFoundException.class
+    })
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionResponse handlePostNotfoundException() {
+        return ExceptionResponse
+                .builder()
+                .message("Post not found")
                 .build();
     }
 }

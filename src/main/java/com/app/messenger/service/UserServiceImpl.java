@@ -176,7 +176,7 @@ public class UserServiceImpl implements UserService {
         User userToDelete = userRepository
                 .findByUsername(username)
                 .orElseThrow(
-                        () -> new UserNotFoundException("User with username " + username + " not found")
+                        () -> new UserNotFoundException("User with uniqueName " + username + " not found")
                 );
 
         validateUserDeletion(userToDelete);
@@ -189,11 +189,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDto> getUserSubscriptions(String username) throws Exception {
+    public List<UserDto> getUserSubscriptions(String uniqueName) throws Exception {
         User user = userRepository
-                .findByUsername(username)
+                .findByUniqueName(uniqueName)
                 .orElseThrow(
-                        () -> new UserNotFoundException("User with username " + username + " not found")
+                        () -> new UserNotFoundException("User with uniqueName " + uniqueName + " not found")
                 );
         List<SubscriptionSubscriber> subscriptionSubscribers = subscriptionSubscriberRepository.findBySubscriberId(user.getId());
         return convertUserStreamToUserDtoList(subscriptionSubscribers
@@ -202,11 +202,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDto> getUserSubscribers(String username) throws Exception {
+    public List<UserDto> getUserSubscribers(String uniqueName) throws Exception {
         User user = userRepository
-                .findByUsername(username)
+                .findByUniqueName(uniqueName)
                 .orElseThrow(
-                        () -> new UserNotFoundException("User with username " + username + " not found")
+                        () -> new UserNotFoundException("User with username " + uniqueName + " not found")
                 );
         List<SubscriptionSubscriber> subscriptionSubscribers = subscriptionSubscriberRepository.findBySubscriptionId(user.getId());
         return convertUserStreamToUserDtoList(subscriptionSubscribers
