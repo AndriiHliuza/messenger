@@ -6,12 +6,7 @@
 <details>
   <summary>Table of Contents</summary>
   <ol>
-    <li>
-      <a href="#description">About The Project</a>
-    </li>
-    <li>
-      <a href="#projects-functionality-and-features">Project's Functionality and Features</a>
-    </li>
+    <li><a href="#description">About The Project</a></li>
     <li><a href="#prerequisites">Prerequisites</a></li>
     <li><a href="#installation-steps">Installation Steps</a></li>
   </ol>
