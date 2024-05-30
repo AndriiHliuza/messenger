@@ -7,6 +7,7 @@
   <summary>Table of Contents</summary>
   <ol>
     <li><a href="#about-the-project">About The Project</a></li>
+    <li><a href="#endpoints">Endpoints</a></li>
     <li><a href="#prerequisites">Prerequisites</a></li>
     <li><a href="#installation-steps">Installation Steps</a></li>
   </ol>
@@ -19,7 +20,11 @@
 <p>
   Safety of communication is achieved by encrypting messages before sending them to other users. For this purpose messenger uses a combination of asymmetric and symmetric encryption methods.
 </p>
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+
+## Endpoints
+<p>Navigate to <a href="http://localhost:8080/swagger-ui/index.html">http://localhost:8080/swagger-ui/index.html</a> in order to see available endpoints in the project.</p>
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -29,7 +34,6 @@
   <li>Java 17+ recommended</li>
   <li>Docker</li>
 </ul>
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
