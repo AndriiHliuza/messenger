@@ -51,9 +51,9 @@ application:
     admin:
       username: ${APP_ADMIN_USERNAME}
       password: ${APP_ADMIN_PASSWORD}
-      uniqueName: ${APP_MESSENGER_ADMIN_UNIQUE_NAME}
-      firstname: ${APP_ROOT_FIRST_NAME}
-      lastname: ${APP_ROOT_LAST_NAME}
+      uniqueName: ${APP_ADMIN_UNIQUE_NAME}
+      firstname: ${APP_ADMIN_FIRST_NAME}
+      lastname: ${APP_ADMIN_LAST_NAME}
 
   email:
     from: ${FROM_EMAIL}

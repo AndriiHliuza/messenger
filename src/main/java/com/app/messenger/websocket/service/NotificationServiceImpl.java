@@ -102,21 +102,23 @@ public class NotificationServiceImpl implements NotificationService {
                         .orElse(null);
 
                 String anotherUserInPrivateChatUsername = null;
+                String anotherUserInPrivateChatUniqueName = null;
 
                 if (anotherUserInPrivateChat != null) {
                     anotherUserInPrivateChatUsername = anotherUserInPrivateChat.getUsername();
+                    anotherUserInPrivateChatUniqueName = anotherUserInPrivateChat.getUniqueName();
                 }
 
                 chatNotificationDto.setType(NotificationType.DELETED_PRIVATE_CHAT_NOTIFICATION.name());
                 processAndSendNotificationToUser(chatNotificationDto.cloneAndSetReceiverUsernameAndChatName(
                         currentUser.getUsername(),
-                        anotherUserInPrivateChatUsername
+                        anotherUserInPrivateChatUniqueName
                 ));
 
                 if (anotherUserInPrivateChatUsername != null) {
                     processAndSendNotificationToUser(chatNotificationDto.cloneAndSetReceiverUsernameAndChatName(
                             anotherUserInPrivateChatUsername,
-                            currentUser.getUsername())
+                            currentUser.getUniqueName())
                     );
                 }
             }
