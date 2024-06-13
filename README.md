@@ -16,7 +16,7 @@
 
 <!-- About The Project -->
 ## About The Project
-<p>This repository is a BACK-END ReactJS part of a safe and secure messeneger project for a real-time communication between users.</p>
+<p>This repository is a BACK-END Spring-Boot part of a safe and secure messeneger project for a real-time communication between users.</p>
 <p>
   Safety of communication is achieved by encrypting messages before sending them to other users. For this purpose messenger uses a combination of asymmetric and symmetric encryption methods.
 </p>
